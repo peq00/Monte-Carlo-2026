@@ -309,25 +309,205 @@
             }
         }
 
-        #advancedResults .results {
-            margin-top: 20px;
+        /* ===== Advanced Forecast (Fluent-inspired, light green) ===== */
+        .adv {
+            --g50: #f3faf5;
+            --g100: #e6f4ea;
+            --g200: #cdeacb;
+            --g300: #a8d5ae;
+            --g500: #4caf7d;
+            --g600: #2e8b57;
+            --g700: #1e7145;
+            --g800: #155a37;
+            --teal: #1f9e8f;
+            --ink: #1f2d26;
+            --muted: #5b6b63;
+            --line: #e1ebe4;
+            --amber-bg: #fff6e5;
+            --shadow: 0 1.6px 3.6px rgba(0, 0, 0, 0.07), 0 0.3px 0.9px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 6.4px 14.4px rgba(0, 0, 0, 0.09), 0 1.2px 3.6px rgba(0, 0, 0, 0.07);
+            background: linear-gradient(180deg, #f4fbf6 0%, #ffffff 360px);
+            color: var(--ink);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
         }
 
-        #advancedResults table {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .adv h2 { color: var(--g800); margin-bottom: 6px; font-weight: 600; }
+        .adv h3 { color: var(--g700); font-size: 1.05em; margin: 0 0 12px; font-weight: 600; }
+        .adv-sub { color: var(--muted); margin-bottom: 20px; line-height: 1.6; max-width: 900px; }
+
+        .adv-panel {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
-        #advancedResults table th {
-            background: #f0f0f0;
+        .adv-controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+        .adv-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .adv-field.wide { grid-column: span 2; }
+        .adv-field label { font-weight: 600; font-size: 0.88em; color: var(--ink); }
+        .adv-field small { color: var(--muted); font-size: 0.8em; line-height: 1.4; }
+        .adv-field input[type="text"],
+        .adv-field input[type="number"],
+        .adv-field input[type="date"],
+        .adv-field select {
+            border: 1px solid #c8d6cd;
+            border-radius: 6px;
+            padding: 9px 10px;
+            font: inherit;
+            font-size: 0.95em;
+            background: #fff;
+            color: var(--ink);
+            width: 100%;
+        }
+        .adv-field input:focus, .adv-field select:focus, .adv-btn:focus-visible, .adv-tip:focus-visible, .adv-seg button:focus-visible {
+            outline: 2px solid var(--g500);
+            outline-offset: 1px;
+            border-color: var(--g600);
+        }
+        .adv input[type="range"] { accent-color: var(--g600); width: 100%; margin-top: 6px; }
+        .adv-range-scale { display: flex; justify-content: space-between; font-size: 0.75em; color: var(--muted); }
+
+        .adv-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: -4px 0 12px; }
+        .adv-btn {
+            border: 1px solid #c8d6cd;
+            background: #fff;
+            color: var(--g800);
+            padding: 9px 16px;
+            border-radius: 6px;
+            font: inherit;
             font-weight: 600;
-            color: #333;
+            font-size: 0.92em;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .adv-btn:hover { background: var(--g50); border-color: var(--g300); }
+        .adv-btn.primary { background: var(--g600); border-color: var(--g600); color: #fff; }
+        .adv-btn.primary:hover { background: var(--g700); }
+        .adv-btn:disabled { opacity: 0.65; cursor: progress; }
+        .adv-btn.small { padding: 4px 10px; font-size: 0.8em; box-shadow: none; }
+
+        .adv-status { color: var(--muted); font-size: 0.85em; margin-bottom: 16px; min-height: 1.2em; }
+        .adv-error {
+            background: var(--amber-bg);
+            border: 1px solid #f1d29a;
+            color: #6b4a0b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            line-height: 1.6;
         }
 
-        #advancedResults table td {
-            vertical-align: middle;
+        .adv-section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 8px 0 12px; flex-wrap: wrap; }
+        .adv-section-title h3 { margin: 0; }
+        .adv-scn-label { font-weight: 600; color: var(--g800); margin: 4px 0 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95em; }
+        .adv-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
+        .adv-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .adv-tile {
+            background: linear-gradient(135deg, #e8f6ed 0%, #d3eedc 100%);
+            border: 1px solid #c3e4cd;
+            border-radius: 12px;
+            padding: 16px 18px;
+            box-shadow: var(--shadow);
+        }
+        .adv-tile.b { background: linear-gradient(135deg, #e6f5f1 0%, #cfebe4 100%); border-color: #bfe1d8; }
+        .adv-tile-label { font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.04em; color: var(--g700); font-weight: 600; }
+        .adv-tile-value { font-size: 1.5em; font-weight: 700; color: var(--g800); margin: 6px 0 4px; line-height: 1.2; }
+        .adv-tile-note { font-size: 0.82em; color: var(--muted); line-height: 1.4; }
+
+        .adv-grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+        .adv-grid2 > .adv-panel { margin-bottom: 20px; }
+
+        .adv-chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .adv-chart-head h3 { margin-bottom: 2px; }
+        .adv-cap { color: var(--muted); font-size: 0.85em; margin: 0; line-height: 1.5; }
+        .adv-chart-tools { display: flex; gap: 8px; align-items: center; }
+        .adv-chart-box { position: relative; height: 300px; }
+        .adv-chart-box.tall { height: 380px; }
+        .adv-sub-chart h4 { font-size: 0.9em; color: var(--ink); margin: 0 0 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+        .adv-seg { display: inline-flex; border: 1px solid #c8d6cd; border-radius: 6px; overflow: hidden; }
+        .adv-seg button { border: 0; background: #fff; padding: 5px 12px; cursor: pointer; font: inherit; font-size: 0.82em; color: var(--g800); }
+        .adv-seg button + button { border-left: 1px solid #c8d6cd; }
+        .adv-seg button[aria-pressed="true"] { background: var(--g100); font-weight: 600; }
+
+        .adv-answers { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+        .adv-answers li { background: var(--g50); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; line-height: 1.55; }
+
+        .adv-recommend { font-size: 1.35em; font-weight: 700; color: var(--g800); margin: 2px 0 6px; }
+        .adv-mgr-block + .adv-mgr-block { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+        .adv-mgr-block h4 { font-size: 0.82em; text-transform: uppercase; letter-spacing: 0.04em; color: var(--g700); margin: 0 0 6px; }
+        .adv-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: 0.9em; }
+        .adv-badge.low { background: #dff3e5; color: #155a37; }
+        .adv-badge.mid { background: #fff1cf; color: #6b4a0b; }
+        .adv-badge.high { background: #ffe3c4; color: #7a3d00; }
+        .adv-warn { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+        .adv-warn li { line-height: 1.5; font-size: 0.92em; }
+
+        .adv-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .adv table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .adv th { text-align: left; background: var(--g50); color: var(--g800); font-weight: 600; padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+        .adv td { padding: 9px 10px; border-bottom: 1px solid #eef3f0; white-space: nowrap; }
+        .adv .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .adv tr.extra td { color: var(--muted); }
+        .adv tr.group td { background: #fafdfb; font-weight: 600; color: var(--g800); }
+        .adv-bar { display: inline-block; height: 6px; border-radius: 3px; vertical-align: middle; margin-left: 8px; background: var(--g500); }
+        .adv-bar.b { background: var(--teal); }
+        .adv-delta-up { color: #8a5a00; font-weight: 600; }
+        .adv-delta-down { color: var(--g700); font-weight: 600; }
+
+        .adv-note { font-size: 0.85em; color: var(--muted); line-height: 1.6; }
+        .adv-note ul { margin: 6px 0 0 18px; }
+
+        .adv-tip { border-bottom: 1px dotted currentColor; cursor: help; position: relative; }
+        .adv-tip::after {
+            content: attr(data-tip);
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 8px);
+            transform: translateX(-50%);
+            width: max-content;
+            max-width: 260px;
+            background: #fff;
+            color: var(--ink);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-lg);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            line-height: 1.45;
+            text-transform: none;
+            letter-spacing: 0;
+            white-space: normal;
+            text-align: left;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s;
+            z-index: 30;
+        }
+        .adv-tip:hover::after, .adv-tip:focus::after { opacity: 1; }
+        .adv-glossary { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .adv-chip { background: var(--g50); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--g800); font-size: 0.85em; }
+
+        @media (max-width: 960px) {
+            .adv-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .adv-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .adv-grid2 { grid-template-columns: minmax(0, 1fr); gap: 0; }
+        }
+        @media (max-width: 540px) {
+            .adv-controls { grid-template-columns: minmax(0, 1fr); }
+            .adv-field.wide { grid-column: auto; }
+            .adv-tiles { gap: 10px; }
+            .adv-tile { padding: 12px; }
+            .adv-tile-value { font-size: 1.15em; }
+            .adv-chart-box, .adv-chart-box.tall { height: 280px; }
+            .adv-panel { padding: 14px; }
+            .adv-tip::after { max-width: 200px; }
         }
 
         .loading {
@@ -357,7 +537,7 @@
         <div class="tabs">
             <button class="tab-button active" onclick="switchTab('home')">🏠 Strona Główna</button>
             <button class="tab-button" onclick="switchTab('forecast')">📊 Prognoza Monte Carlo</button>
-            <button class="tab-button" onclick="switchTab('advanced')">🔬 Advanced Forecast</button>
+            <button class="tab-button" onclick="switchTab('advanced'); advOnTabOpen()">🔬 Advanced Forecast</button>
         </div>
         
         <div id="home" class="tab-content active">
@@ -449,37 +629,199 @@
             <div id="simulationResults"></div>
         </div>
 
-        <div id="advanced" class="tab-content">
-            <h2>🔬 Advanced Forecast (100k Simulations)</h2>
-            
-            <h3>Simulation Parameters</h3>
-            
-            <div class="input-group">
-                <div class="input-field">
-                    <label for="advBacklog">Backlog Size:</label>
-                    <input type="number" id="advBacklog" value="62" min="1">
+        <div id="advanced" class="tab-content adv">
+            <h2>🔬 Advanced Forecast</h2>
+            <p class="adv-sub">
+                Probabilistyczna prognoza backlogu metodą
+                <span class="adv-tip" tabindex="0" data-tip="Monte Carlo – metoda, która dziesiątki tysięcy razy losuje przyszłe Sprinty z historii zespołu. Z rozkładu wyników odczytujemy prawdopodobieństwa zamiast jednej „pewnej” daty.">Monte Carlo</span>.
+                Porównujemy scenariusz A (bez nowych wymagań) ze scenariuszem B (losowy wzrost zakresu).
+                Wyniki podajemy jako percentyle i pełne rozkłady – średnia jest tylko informacją pomocniczą.
+            </p>
+
+            <section class="adv-panel" aria-labelledby="advParamsTitle">
+                <h3 id="advParamsTitle">Parametry symulacji</h3>
+                <div class="adv-controls">
+                    <div class="adv-field wide">
+                        <label for="advBacklog">Liczba elementów backlogu: <strong id="advBacklogOut">62</strong></label>
+                        <input type="range" id="advBacklog" min="1" max="200" step="1" value="62">
+                        <div class="adv-range-scale" aria-hidden="true"><span>1</span><span>200</span></div>
+                    </div>
+                    <div class="adv-field wide">
+                        <label for="advThroughput">Historyczny <span class="adv-tip" tabindex="0" data-tip="Throughput (przepustowość) – liczba elementów ukończonych w jednym Sprincie. Każda iteracja losuje z powtórzeniami wartości z tej listy.">throughput</span> (elementy na Sprint)</label>
+                        <input type="text" id="advThroughput" value="5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6" autocomplete="off" spellcheck="false">
+                        <small id="advThroughputInfo" aria-live="polite"></small>
+                    </div>
+                    <div class="adv-field">
+                        <label for="advStart">Start prac</label>
+                        <input type="date" id="advStart" value="2027-01-04">
+                        <small>Pierwszy poniedziałek stycznia 2027</small>
+                    </div>
+                    <div class="adv-field">
+                        <label for="advDeadline">Termin prognozy elementów</label>
+                        <input type="date" id="advDeadline" value="2027-03-31">
+                        <small>Liczą się pełne Sprinty zakończone do tego dnia</small>
+                    </div>
+                    <div class="adv-field">
+                        <label for="advSprintDays">Długość Sprintu (dni)</label>
+                        <input type="number" id="advSprintDays" min="1" max="60" step="1" value="14">
+                    </div>
+                    <div class="adv-field">
+                        <label for="advIterations">Liczba iteracji</label>
+                        <select id="advIterations">
+                            <option value="100000" selected>100 000</option>
+                            <option value="250000">250 000</option>
+                            <option value="500000">500 000</option>
+                            <option value="1000000">1 000 000</option>
+                        </select>
+                    </div>
+                    <div class="adv-field">
+                        <label for="advGrowthMin">Scenariusz B: wzrost min (%)</label>
+                        <input type="number" id="advGrowthMin" min="0" max="200" step="1" value="20">
+                    </div>
+                    <div class="adv-field">
+                        <label for="advGrowthMax">Scenariusz B: wzrost max (%)</label>
+                        <input type="number" id="advGrowthMax" min="0" max="200" step="1" value="30">
+                        <small>Losowany jednostajnie w każdej iteracji</small>
+                    </div>
+                    <div class="adv-field">
+                        <label for="advSeed">Ziarno generatora</label>
+                        <input type="number" id="advSeed" min="0" step="1" value="2027">
+                        <small>Te same dane i ziarno = te same wyniki</small>
+                    </div>
+                    <div class="adv-field">
+                        <span style="font-weight:600;font-size:0.88em;">Pojęcia</span>
+                        <div class="adv-glossary">
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="Monte Carlo – wielokrotne losowanie przyszłych Sprintów z historii zespołu; wynik to rozkład prawdopodobieństwa, a nie jedna liczba.">Monte Carlo</span>
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="Throughput – liczba elementów ukończonych w Sprincie. To jedyna miara wydajności używana w modelu.">Throughput</span>
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="P50 (mediana) – połowa symulacji kończy się do tej daty. To rzut monetą: tylko 50% szans na dotrzymanie.">P50</span>
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="P85 – 85% symulacji kończy się do tej daty (albo dostarcza co najmniej tyle elementów). Typowy poziom do planowania i komunikacji z biznesem.">P85</span>
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="P95 – 95% symulacji kończy się do tej daty. Bezpieczny termin zobowiązania z buforem na ryzyko.">P95</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-field">
-                    <label for="advVelocity">Historical Throughput:</label>
-                    <textarea id="advVelocity" placeholder="5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6">5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6</textarea>
-                </div>
-                <div class="input-field">
-                    <label for="advSprintLength">Sprint Length (days):</label>
-                    <input type="number" id="advSprintLength" value="14" min="1">
-                </div>
-                <div class="input-field">
-                    <label for="advSimulations">Number of Simulations:</label>
-                    <input type="number" id="advSimulations" value="100000" min="10000" step="10000">
-                </div>
+            </section>
+
+            <div class="adv-actions">
+                <button type="button" class="adv-btn primary" id="advRunBtn">↻ Uruchom ponownie symulację</button>
+                <button type="button" class="adv-btn" id="advNewSeedBtn">🎲 Nowe ziarno</button>
+                <button type="button" class="adv-btn" id="advResetBtn">Przywróć dane domyślne</button>
+                <button type="button" class="adv-btn" id="advCsvBtn">⬇ Eksport CSV</button>
             </div>
-            
-            <div class="buttons">
-                <button class="button button-primary" onclick="runAdvancedSimulation()">🚀 Run Simulation</button>
-                <button class="button button-secondary" onclick="resetAdvancedDefaults()">↺ Reset Defaults</button>
-                <button class="button button-secondary" onclick="exportAdvancedResults()">💾 Export CSV</button>
+            <p class="adv-status" id="advStatus" aria-live="polite"></p>
+            <div class="adv-error" id="advError" role="alert" hidden></div>
+
+            <div id="advOutput" hidden>
+                <div class="adv-section-title">
+                    <h3>Executive Summary</h3>
+                    <span class="adv-note" id="advMeta"></span>
+                </div>
+                <div class="adv-scn-label"><span class="adv-dot" style="background:#2e8b57"></span><span id="advScnA">Scenariusz A – brak nowych wymagań</span></div>
+                <div class="adv-tiles" id="advTilesA"></div>
+                <div class="adv-scn-label"><span class="adv-dot" style="background:#1f9e8f"></span><span id="advScnB"></span></div>
+                <div class="adv-tiles" id="advTilesB"></div>
+
+                <div class="adv-grid2">
+                    <section class="adv-panel" aria-labelledby="advAnswersTitle">
+                        <h3 id="advAnswersTitle">Odpowiedzi dla biznesu</h3>
+                        <ul class="adv-answers" id="advAnswers"></ul>
+                    </section>
+                    <section class="adv-panel" aria-labelledby="advManagerTitle">
+                        <h3 id="advManagerTitle">Interpretacja dla managera</h3>
+                        <div id="advManager"></div>
+                    </section>
+                </div>
+
+                <section class="adv-panel">
+                    <div class="adv-chart-head">
+                        <div>
+                            <h3>Prawdopodobieństwo ukończenia backlogu do danego dnia (CDF)</h3>
+                            <p class="adv-cap">Oto z jakim prawdopodobieństwem ukończymy backlog do danego dnia. Główny wykres decyzyjny – znajdź datę, przy której krzywa przecina wymagany poziom pewności.</p>
+                        </div>
+                        <div class="adv-chart-tools"><button type="button" class="adv-btn small" data-png="cdf">PNG</button></div>
+                    </div>
+                    <div class="adv-chart-box tall"><canvas id="advCdf" role="img" aria-label="Dystrybuanta: prawdopodobieństwo ukończenia backlogu do kolejnych dat dla scenariuszy A i B"></canvas></div>
+                </section>
+
+                <div class="adv-grid2">
+                    <section class="adv-panel">
+                        <div class="adv-chart-head">
+                            <div>
+                                <h3>Histogram terminu dostarczenia</h3>
+                                <p class="adv-cap">Odsetek symulacji kończących backlog w danym Sprincie. Linie: P50, P85, P95.</p>
+                            </div>
+                            <div class="adv-chart-tools">
+                                <div class="adv-seg" role="group" aria-label="Wybór scenariusza">
+                                    <button type="button" data-hist="A" aria-pressed="true">A</button>
+                                    <button type="button" data-hist="B" aria-pressed="false">B</button>
+                                </div>
+                                <button type="button" class="adv-btn small" data-png="hist">PNG</button>
+                            </div>
+                        </div>
+                        <div class="adv-chart-box"><canvas id="advHist" role="img" aria-label="Histogram dat ukończenia backlogu"></canvas></div>
+                    </section>
+                    <section class="adv-panel">
+                        <div class="adv-chart-head">
+                            <div>
+                                <h3 id="advItemsTitle">Elementy dostarczone do terminu</h3>
+                                <p class="adv-cap">Rozkład liczby ukończonych elementów pierwotnego backlogu. Linie: P85 dla A i B.</p>
+                            </div>
+                            <div class="adv-chart-tools"><button type="button" class="adv-btn small" data-png="items">PNG</button></div>
+                        </div>
+                        <div class="adv-chart-box"><canvas id="advItems" role="img" aria-label="Histogram liczby elementów dostarczonych do terminu"></canvas></div>
+                    </section>
+                </div>
+
+                <section class="adv-panel">
+                    <div class="adv-chart-head">
+                        <div>
+                            <h3>Porównanie scenariuszy: bez nowych wymagań vs wzrost zakresu</h3>
+                            <p class="adv-cap" id="advCmpCap"></p>
+                        </div>
+                    </div>
+                    <div class="adv-grid2">
+                        <div class="adv-sub-chart">
+                            <h4>Termin ukończenia <button type="button" class="adv-btn small" data-png="cmpDates">PNG</button></h4>
+                            <div class="adv-chart-box"><canvas id="advCmpDates" role="img" aria-label="Porównanie dat P50, P85, P95 dla scenariuszy A i B"></canvas></div>
+                        </div>
+                        <div class="adv-sub-chart">
+                            <h4>Elementy do terminu prognozy <button type="button" class="adv-btn small" data-png="cmpItems">PNG</button></h4>
+                            <div class="adv-chart-box"><canvas id="advCmpItems" role="img" aria-label="Porównanie liczby elementów dla scenariuszy A i B"></canvas></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="adv-panel">
+                    <div class="adv-chart-head">
+                        <div>
+                            <h3>Tornado – co najbardziej wpływa na termin?</h3>
+                            <p class="adv-cap" id="advTornadoCap"></p>
+                        </div>
+                        <div class="adv-chart-tools"><button type="button" class="adv-btn small" data-png="tornado">PNG</button></div>
+                    </div>
+                    <div class="adv-chart-box"><canvas id="advTornado" role="img" aria-label="Wykres tornado wpływu throughputu i wzrostu zakresu na termin P85"></canvas></div>
+                </section>
+
+                <section class="adv-panel">
+                    <h3>Wpływ wzrostu zakresu (A → B)</h3>
+                    <div class="adv-table-wrap" id="advImpact"></div>
+                </section>
+
+                <section class="adv-panel">
+                    <h3>Prawdopodobieństwo ukończenia całego backlogu</h3>
+                    <div class="adv-table-wrap" id="advProb"></div>
+                </section>
+
+                <section class="adv-panel">
+                    <h3>Statystyki rozkładów</h3>
+                    <div class="adv-table-wrap" id="advStats"></div>
+                    <p class="adv-note" style="margin-top:10px;">Dla dat P85/P95 oznaczają termin, do którego kończy się co najmniej 85%/95% symulacji. Dla liczby elementów P85/P95 oznaczają wartość osiąganą w co najmniej 85%/95% symulacji (ostrożna, dolna granica).</p>
+                </section>
+
+                <section class="adv-panel adv-note">
+                    <strong>Założenia modelu</strong>
+                    <ul id="advAssumptions"></ul>
+                </section>
             </div>
-            
-            <div id="advancedResults"></div>
         </div>
     </div>
     
@@ -799,280 +1141,924 @@ function resetDefaults() {
     document.getElementById('simulationResults').innerHTML = '';
 }
 
-function runAdvancedSimulation() {
-    const backlog = parseInt(document.getElementById('advBacklog').value) || 62;
-    const velocityStr = document.getElementById('advVelocity').value;
-    const numSims = parseInt(document.getElementById('advSimulations').value) || 100000;
-    const sprintLength = parseInt(document.getElementById('advSprintLength').value) || 14;
-    const velocity = parseVelocity(velocityStr);
-
-    if (!velocity || velocity.length === 0) {
-        document.getElementById('advancedResults').innerHTML = '<div class="error">❌ Invalid throughput data</div>';
-        return;
-    }
-
-    document.getElementById('advancedResults').innerHTML = '<div class="loading">⏳ Running ' + numSims.toLocaleString() + ' simulations...</div>';
-
-    setTimeout(() => {
-        try {
-            const results = performAdvancedSimulations(backlog, velocity, numSims, sprintLength);
-            displayAdvancedResults(results);
-        } catch (error) {
-            document.getElementById('advancedResults').innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
-        }
-    }, 100);
-}
-
-function performAdvancedSimulations(backlog, velocity, numSims, sprintLength) {
-    const startDate = new Date('2027-01-04T00:00:00');
-    const march31 = new Date('2027-03-31T00:00:00');
-    const feb28 = new Date('2027-02-28T00:00:00');
-    const apr30 = new Date('2027-04-30T00:00:00');
-    const may31 = new Date('2027-05-31T00:00:00');
-
-    const scenarioA = runScenarioSim(backlog, velocity, numSims, sprintLength, 0, startDate, [march31, feb28, apr30, may31]);
-    const scenarioB = runScenarioSim(backlog, velocity, numSims, sprintLength, null, startDate, [march31, feb28, apr30, may31]);
-
-    return { scenarioA, scenarioB, startDate, march31, feb28, apr30, may31 };
-}
-
-function runScenarioSim(baseBacklog, velocity, numSims, sprintLength, growthPercent, startDate, checkDates) {
-    const completionDates = [];
-    const itemsByMarch31 = [];
-    const dateProbs = {};
-    let baselineBacklog = baseBacklog;
-
-    for (let sim = 0; sim < numSims; sim++) {
-        const rng = new SeededRandom(sim);
-        const growth = growthPercent === null ? 20 + rng.next() * 10 : growthPercent;
-        const totalBacklog = baseBacklog + Math.round(baseBacklog * growth / 100);
-        
-        let completed = 0, sprint = 0, completionDate = null;
-        while (completed < totalBacklog && sprint < 100) {
-            const idx = Math.floor(rng.next() * velocity.length);
-            completed += velocity[idx];
-            sprint++;
-            const sprintEnd = addDays(startDate, sprint * sprintLength - 1);
-            if (completed >= totalBacklog) {
-                completionDate = sprintEnd;
-                break;
-            }
-        }
-
-        if (completionDate) completionDates.push(completionDate);
-
-        let itemsCount = 0, sprint2 = 0;
-        const rng2 = new SeededRandom(sim + 1000);
-        while (true) {
-            const sprintEnd = addDays(startDate, (sprint2 + 1) * sprintLength - 1);
-            if (sprintEnd > checkDates[0]) break;
-            const idx = Math.floor(rng2.next() * velocity.length);
-            itemsCount += velocity[idx];
-            sprint2++;
-        }
-        itemsByMarch31.push(Math.min(itemsCount, totalBacklog));
-
-        checkDates.forEach(date => {
-            const key = date.toISOString().split('T')[0];
-            if (completionDate && completionDate <= date) {
-                dateProbs[key] = (dateProbs[key] || 0) + 1;
-            }
-        });
-    }
-
-    completionDates.sort((a, b) => a - b);
-    itemsByMarch31.sort((a, b) => a - b);
-
-    return { completionDates, itemsByMarch31, dateProbs, baseBacklog, numSims };
-}
-
-function displayAdvancedResults(data) {
-    const html = generateAdvancedResultsHTML(data);
-    document.getElementById('advancedResults').innerHTML = html;
-    setTimeout(() => {
-        renderComparisonChart(data);
-        renderCompletionHistogram(data);
-        renderCDFChart(data);
-    }, 300);
-}
-
-function generateAdvancedResultsHTML(data) {
-    const a = data.scenarioA;
-    const b = data.scenarioB;
-
-    const getStats = (arr) => {
-        const sorted = arr.slice().sort((x, y) => x - y);
-        return {
-            p50: sorted[Math.floor(sorted.length * 0.5)],
-            p85: sorted[Math.floor(sorted.length * 0.85)],
-            p95: sorted[Math.floor(sorted.length * 0.95)]
-        };
-    };
-
-    const getDateStats = (dates) => {
-        const stats = getStats(dates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24)));
-        return {
-            p50: addDays(data.startDate, Math.round(stats.p50)),
-            p85: addDays(data.startDate, Math.round(stats.p85)),
-            p95: addDays(data.startDate, Math.round(stats.p95))
-        };
-    };
-
-    const aDateStats = getDateStats(a.completionDates);
-    const bDateStats = getDateStats(b.completionDates);
-    const aItemStats = getStats(a.itemsByMarch31);
-    const bItemStats = getStats(b.itemsByMarch31);
-
-    const fmt = (d) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-
-    let html = '<div class="results">';
-    html += '<h3 style="margin-bottom: 20px;">📊 Executive Summary</h3>';
-    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">';
-
-    const cards = [
-        { label: 'P50 (A)', value: fmt(aDateStats.p50), color: '#90ee90' },
-        { label: 'P85 (A)', value: fmt(aDateStats.p85), color: '#90ee90' },
-        { label: 'P95 (A)', value: fmt(aDateStats.p95), color: '#90ee90' },
-        { label: 'Items by Mar (A, P85)', value: Math.round(aItemStats.p85) + ' / ' + a.baseBacklog, color: '#90ee90' },
-        { label: 'P50 (B)', value: fmt(bDateStats.p50), color: '#fff4e6' },
-        { label: 'P85 (B)', value: fmt(bDateStats.p85), color: '#fff4e6' },
-        { label: 'P95 (B)', value: fmt(bDateStats.p95), color: '#fff4e6' },
-        { label: 'Items by Mar (B, P85)', value: Math.round(bItemStats.p85) + ' / ' + b.baseBacklog, color: '#fff4e6' }
-    ];
-
-    cards.forEach(card => {
-        html += `<div style="background: ${card.color}; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">${card.label}</div>
-            <div style="font-size: 1.5em; font-weight: bold; color: #333;">${card.value}</div>
-        </div>`;
-    });
-
-    html += '</div>';
-    html += '<h3>Scenario A: No Growth</h3>' + genScenarioTable(aDateStats, aItemStats, a);
-    html += '<h3 style="margin-top: 30px;">Scenario B: +20-30% Growth</h3>' + genScenarioTable(bDateStats, bItemStats, b);
-    html += '<h3 style="margin-top: 30px;">Completion Probability</h3>' + genProbTable(data, a, b);
-    html += '<div style="margin-top: 30px;"><h3>Scenario Comparison</h3><div style="position: relative; height: 300px;"><canvas id="comparisonChart"></canvas></div></div>';
-    html += '<div style="margin-top: 30px;"><h3>Distribution (Scenario A)</h3><div style="position: relative; height: 300px;"><canvas id="histogramChart"></canvas></div></div>';
-    html += '<div style="margin-top: 30px;"><h3>CDF - Cumulative Probability</h3><div style="position: relative; height: 300px;"><canvas id="cdfChart"></canvas></div></div>';
-    html += '</div>';
-    return html;
-}
-
-function genScenarioTable(dateStats, itemStats, scenario) {
-    return `<table style="width: 100%; margin: 15px 0; border-collapse: collapse;">
-        <tr style="background: #f5f5f5;">
-            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Metric</th>
-            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">P50</th>
-            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">P85</th>
-            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">P95</th>
-        </tr>
-        <tr>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 500;">Completion</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${dateStats.p50.toLocaleDateString()}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${dateStats.p85.toLocaleDateString()}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${dateStats.p95.toLocaleDateString()}</td>
-        </tr>
-        <tr style="background: #fafafa;">
-            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 500;">Items by Mar 31</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Math.round(itemStats.p50)}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Math.round(itemStats.p85)}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Math.round(itemStats.p95)}</td>
-        </tr>
-    </table>`;
-}
-
-function genProbTable(data, a, b) {
-    const months = [
-        { name: 'Feb 28', date: data.feb28 },
-        { name: 'Mar 31', date: data.march31 },
-        { name: 'Apr 30', date: data.apr30 },
-        { name: 'May 31', date: data.may31 }
-    ];
-    let html = '<table style="width: 100%; border-collapse: collapse;"><tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Date</th>';
-    html += '<th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">A (%)</th><th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">B (%)</th></tr>';
-    months.forEach((m, i) => {
-        const key = m.date.toISOString().split('T')[0];
-        const probA = ((a.dateProbs[key] || 0) / a.numSims * 100).toFixed(1);
-        const probB = ((b.dateProbs[key] || 0) / b.numSims * 100).toFixed(1);
-        html += `<tr style="background: ${i % 2 ? '#fafafa' : 'white'};"><td style="padding: 10px; border-bottom: 1px solid #eee;">${m.name}</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee; font-weight: bold;">${probA}</td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee; font-weight: bold;">${probB}</td></tr>`;
-    });
-    html += '</table>';
-    return html;
-}
-
-function renderComparisonChart(data) {
-    const ctx = document.getElementById('comparisonChart');
-    if (!ctx) return;
-    const getStats = (dates) => {
-        const days = dates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24));
-        const sorted = days.slice().sort((a, b) => a - b);
-        return { p50: sorted[Math.floor(sorted.length * 0.50)], p85: sorted[Math.floor(sorted.length * 0.85)], p95: sorted[Math.floor(sorted.length * 0.95)] };
-    };
-    const aStats = getStats(data.scenarioA.completionDates);
-    const bStats = getStats(data.scenarioB.completionDates);
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['P50', 'P85', 'P95'],
-            datasets: [
-                { label: 'Scenario A', data: [aStats.p50, aStats.p85, aStats.p95], backgroundColor: '#90ee90', borderColor: '#4caf50', borderWidth: 2 },
-                { label: 'Scenario B', data: [bStats.p50, bStats.p85, bStats.p95], backgroundColor: '#ffd699', borderColor: '#ff9800', borderWidth: 2 }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
-    });
-}
-
-function renderCompletionHistogram(data) {
-    const ctx = document.getElementById('histogramChart');
-    if (!ctx) return;
-    const days = data.scenarioA.completionDates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24));
-    const bins = {}, maxBin = Math.ceil(Math.max(...days) / 7);
-    days.forEach(d => { const bin = Math.floor(d / 7) * 7; bins[bin] = (bins[bin] || 0) + 1; });
-    const sortedBins = Object.keys(bins).sort((a, b) => a - b).slice(0, 20);
-    const labels = sortedBins.map(b => 'Day ' + b);
-    new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets: [{ label: 'Simulations', data: sortedBins.map(b => bins[b]), backgroundColor: '#90ee90', borderColor: '#4caf50', borderWidth: 1 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
-}
-
-function renderCDFChart(data) {
-    const ctx = document.getElementById('cdfChart');
-    if (!ctx) return;
-    const days = data.scenarioA.completionDates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24)).sort((a, b) => a - b);
-    const labels = [], cdfData = [];
-    for (let i = 0; i < days.length; i += Math.max(1, Math.floor(days.length / 50))) {
-        labels.push('Day ' + Math.round(days[i]));
-        cdfData.push((i / days.length) * 100);
-    }
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{ label: 'Probability (%)', data: cdfData, borderColor: '#4caf50', backgroundColor: 'rgba(144, 238, 144, 0.2)', borderWidth: 2, fill: true, tension: 0.4 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } }
-    });
-}
-
-function exportAdvancedResults() { alert('CSV export coming soon!'); }
-
-function resetAdvancedDefaults() {
-    document.getElementById('advBacklog').value = '62';
-    document.getElementById('advVelocity').value = '5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6';
-    document.getElementById('advSimulations').value = '100000';
-    document.getElementById('advSprintLength').value = '14';
-    document.getElementById('advancedResults').innerHTML = '';
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('backlogGrowth').addEventListener('input', updateGrowthInfo);
     updateGrowthInfo();
 });
+    </script>
+    <script>
+/* Advanced Forecast – Monte Carlo, scenariusz A (bez nowych wymagań) i B (wzrost zakresu). */
+(function () {
+    'use strict';
+
+    const DAY_MS = 86400000;
+    const DEFAULTS = {
+        backlog: 62,
+        throughput: '5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6',
+        start: '2027-01-04',
+        deadline: '2027-03-31',
+        sprintDays: 14,
+        iterations: 100000,
+        growthMin: 20,
+        growthMax: 30,
+        seed: 2027
+    };
+    const MIN_ITERATIONS = 100000;
+    const TORNADO_ITERATIONS = 100000;
+    const MAX_SPRINTS = 5000;
+    const C = {
+        a: '#2e8b57', aFill: 'rgba(46,139,87,0.14)',
+        b: '#1f9e8f', bFill: 'rgba(31,158,143,0.12)',
+        bLight: 'rgba(31,158,143,0.35)',
+        p50: '#6b7d73', p85: '#2b88d8', p95: '#8a6bbf',
+        good: '#5cb88a', bad: '#efb45f',
+        grid: 'rgba(31,45,38,0.07)', ink: '#33443b'
+    };
+    const MONTHS_GEN = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+
+    const $ = (id) => document.getElementById(id);
+    const charts = {};
+    let state = null;
+    let histScenario = 'A';
+    let hasRun = false;
+
+    // ---------- random ----------
+    function hash32(x) {
+        x |= 0;
+        x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
+        x = Math.imul(x ^ (x >>> 15), 0x846ca68b);
+        return (x ^ (x >>> 16)) >>> 0;
+    }
+    function mulberry32(a) {
+        return function () {
+            a |= 0; a = (a + 0x6D2B79F5) | 0;
+            let t = Math.imul(a ^ (a >>> 15), 1 | a);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    // ---------- dates (UTC day numbers, no DST/timezone shifts) ----------
+    function parseDay(str) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str || '');
+        if (!m) return null;
+        const t = Date.UTC(+m[1], +m[2] - 1, +m[3]);
+        const d = new Date(t);
+        if (d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) return null;
+        return t / DAY_MS;
+    }
+    const DTF_LONG = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const DTF_AXIS = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+    const toDate = (day) => new Date(day * DAY_MS);
+    const fmtDate = (day) => DTF_LONG.format(toDate(day));
+    const isoDate = (day) => toDate(day).toISOString().slice(0, 10);
+    function fmtAxisDate(day, refYear) {
+        const d = toDate(day);
+        const s = DTF_AXIS.format(d);
+        return d.getUTCFullYear() !== refYear ? s + ' ' + d.getUTCFullYear() : s;
+    }
+    const fmtN = (x, digits = 0) => Number(x).toLocaleString('pl-PL', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    const fmtPct = (p, digits = 1) => fmtN(p * 100, digits) + '%';
+    const fmtSigned = (x, digits = 1) => (x > 0 ? '+' : x < 0 ? '−' : '±') + fmtN(Math.abs(x), digits);
+    function plural(n, one, few, many) {
+        const n10 = n % 10, n100 = n % 100;
+        if (n === 1) return one;
+        if (n10 >= 2 && n10 <= 4 && (n100 < 12 || n100 > 14)) return few;
+        return many;
+    }
+    const sprintsWord = (n) => n + ' ' + plural(n, 'Sprint', 'Sprinty', 'Sprintów');
+
+    // ---------- input ----------
+    function parseThroughput(raw) {
+        const tokens = (raw || '').trim().split(/[\s,;]+/).filter(Boolean);
+        const values = [], bad = [];
+        tokens.forEach((t) => (/^\d+$/.test(t) ? values.push(Number(t)) : bad.push(t)));
+        return { tokens, values, bad };
+    }
+
+    function readInputs() {
+        const errors = [];
+        const backlog = Number($('advBacklog').value);
+        if (!Number.isInteger(backlog) || backlog < 1) errors.push('Liczba elementów backlogu musi być liczbą całkowitą ≥ 1.');
+
+        const tp = parseThroughput($('advThroughput').value);
+        if (!tp.tokens.length) errors.push('Podaj historyczny throughput, np. „5, 4, 4, 5”.');
+        else if (tp.bad.length) errors.push('Nieprawidłowe wartości throughputu: ' + tp.bad.join(', ') + '. Dozwolone są liczby całkowite ≥ 0 (bez wartości ujemnych i ułamków).');
+        else if (tp.values.every((v) => v === 0)) errors.push('Historia throughputu nie może zawierać samych zer – backlog nigdy nie zostałby ukończony. Pojedyncze zera są prawidłowe.');
+
+        const startDay = parseDay($('advStart').value);
+        const deadlineDay = parseDay($('advDeadline').value);
+        if (startDay === null) errors.push('Podaj prawidłową datę startu.');
+        if (deadlineDay === null) errors.push('Podaj prawidłowy termin prognozy elementów.');
+        if (startDay !== null && deadlineDay !== null && deadlineDay < startDay) errors.push('Termin prognozy nie może być wcześniejszy niż start prac.');
+
+        const sprintRaw = $('advSprintDays').value;
+        const sprintDays = Number(sprintRaw);
+        if (sprintRaw === '' || !Number.isInteger(sprintDays) || sprintDays < 1 || sprintDays > 60) errors.push('Długość Sprintu musi być liczbą całkowitą od 1 do 60 dni.');
+
+        const iterations = Number($('advIterations').value);
+        if (!Number.isInteger(iterations) || iterations < MIN_ITERATIONS) errors.push('Liczba iteracji musi wynosić co najmniej 100 000.');
+
+        const gMinRaw = $('advGrowthMin').value, gMaxRaw = $('advGrowthMax').value;
+        const gMin = Number(gMinRaw), gMax = Number(gMaxRaw);
+        if (gMinRaw === '' || gMaxRaw === '' || !Number.isFinite(gMin) || !Number.isFinite(gMax) || gMin < 0 || gMax > 200 || gMin > gMax) {
+            errors.push('Wzrost zakresu: podaj wartości 0 ≤ min ≤ max ≤ 200%.');
+        }
+
+        const seedRaw = $('advSeed').value;
+        const seed = Number(seedRaw);
+        if (seedRaw === '' || !Number.isInteger(seed) || seed < 0) errors.push('Ziarno musi być nieujemną liczbą całkowitą.');
+
+        if (!errors.length) {
+            const mean = tp.values.reduce((s, v) => s + v, 0) / tp.values.length;
+            const worstTotal = Math.round(backlog * 1.1) * (1 + gMax / 100);
+            if (worstTotal / (mean * 0.8) > MAX_SPRINTS / 2) errors.push('Throughput jest zbyt mały względem backlogu – prognoza przekroczyłaby ' + fmtN(MAX_SPRINTS / 2) + ' Sprintów.');
+        }
+        if (errors.length) {
+            const err = new Error(errors.join(' '));
+            err.list = errors;
+            throw err;
+        }
+        return { backlog, throughput: tp.values, startDay, deadlineDay, sprintDays, iterations, gMin, gMax, seed };
+    }
+
+    // ---------- simulation ----------
+    const endDay = (p, sprints) => p.startDay + sprints * p.sprintDays - 1;
+    const sprintsUntil = (p, day) => Math.max(0, Math.floor((day - p.startDay + 1) / p.sprintDays));
+
+    // Ta sama iteracja i dostaje ten sam ciąg losowań throughputu we wszystkich wariantach
+    // (common random numbers), więc różnice między scenariuszami wynikają tylko ze zmienionego czynnika.
+    function simulate(p, o) {
+        const n = o.n;
+        const tp = o.throughput || p.throughput;
+        const k = tp.length;
+        const scale = o.scale || 1;
+        const base = o.backlog || p.backlog;
+        const growth = o.growth || null;
+        const dl = p.deadlineSprints;
+        const sprints = new Uint16Array(n);
+        const totals = new Uint16Array(n);
+        const itemsAll = o.light ? null : new Uint16Array(n);
+        const itemsOrig = o.light ? null : new Uint16Array(n);
+        const seedTp = hash32(p.seed ^ 0x51ED270B);
+        const seedG = hash32(p.seed ^ 0x2C1B3C6D);
+        const seedR = hash32(p.seed ^ 0x6A09E667);
+
+        for (let i = 0; i < n; i++) {
+            const rnd = mulberry32(hash32(seedTp + i));
+            let total = base;
+            if (growth) {
+                const g = growth[0] + (hash32(seedG + i) / 4294967296) * (growth[1] - growth[0]);
+                total = base + Math.round(base * g / 100);
+            }
+            let done = 0, s = 0, atDeadline = dl === 0 ? 0 : -1;
+            while (done < total) {
+                done += tp[(rnd() * k) | 0] * scale;
+                s++;
+                if (s === dl) atDeadline = done;
+                if (s > MAX_SPRINTS) throw new Error('Symulacja przekroczyła ' + MAX_SPRINTS + ' Sprintów – sprawdź throughput.');
+            }
+            sprints[i] = s;
+            totals[i] = total;
+            if (itemsAll) {
+                const delivered = atDeadline < 0 ? total : Math.min(atDeadline, total);
+                itemsAll[i] = Math.floor(delivered);
+                // Nowe wymagania są wplatane w backlog proporcjonalnie, więc część przepustowości trafia do nich.
+                // Losowe zaokrąglenie udziału pierwotnych elementów usuwa artefakty całkowitoliczbowe.
+                const u = hash32(seedR + i) / 4294967296;
+                itemsOrig[i] = Math.floor(Math.floor(delivered) * base / total + u);
+            }
+        }
+        return { n, sprints, totals, itemsAll, itemsOrig };
+    }
+
+    function stats(arr) {
+        const n = arr.length;
+        let min = Infinity, max = 0, sum = 0;
+        for (let i = 0; i < n; i++) {
+            const v = arr[i];
+            if (v < min) min = v;
+            if (v > max) max = v;
+            sum += v;
+        }
+        const counts = new Float64Array(max + 1);
+        for (let i = 0; i < n; i++) counts[arr[i]]++;
+        const mean = sum / n;
+        let ss = 0;
+        for (let v = min; v <= max; v++) if (counts[v]) ss += counts[v] * (v - mean) * (v - mean);
+        const eps = 1e-9 * n;
+        return {
+            n, min, max, mean, counts,
+            sd: Math.sqrt(ss / n),
+            // najmniejsza wartość v, dla której P(X ≤ v) ≥ p
+            quantile(p) {
+                let c = 0;
+                for (let v = min; v <= max; v++) { c += counts[v]; if (c >= p * n - eps) return v; }
+                return max;
+            },
+            // największa wartość v, dla której P(X ≥ v) ≥ p
+            atLeast(p) {
+                let c = 0;
+                for (let v = max; v >= min; v--) { c += counts[v]; if (c >= p * n - eps) return v; }
+                return min;
+            },
+            cdf(v) {
+                if (v < min) return 0;
+                if (v >= max) return 1;
+                let c = 0;
+                for (let x = min; x <= v; x++) c += counts[x];
+                return c / n;
+            },
+            share(v) { return (counts[v] || 0) / n; }
+        };
+    }
+
+    function summarize(sim) {
+        const sp = stats(sim.sprints);
+        const items = stats(sim.itemsOrig);
+        const itemsAll = stats(sim.itemsAll);
+        const totals = stats(sim.totals);
+        return {
+            sp, items, itemsAll, totals,
+            pct: { p50: sp.quantile(0.5), p85: sp.quantile(0.85), p95: sp.quantile(0.95) },
+            it: { p50: items.atLeast(0.5), p85: items.atLeast(0.85), p95: items.atLeast(0.95) },
+            itAll: { p50: itemsAll.atLeast(0.5), p85: itemsAll.atLeast(0.85), p95: itemsAll.atLeast(0.95) }
+        };
+    }
+
+    function monthEnds(p) {
+        const year = toDate(p.startDay).getUTCFullYear();
+        const out = [];
+        for (let m = 2; m <= 9; m++) {
+            const day = Date.UTC(year, m, 0) / DAY_MS;
+            out.push({ day, gen: MONTHS_GEN[m - 1], year, required: m <= 5, sprints: sprintsUntil(p, day) });
+        }
+        return out;
+    }
+
+    function tornado(p, mainB) {
+        const n = Math.min(p.iterations, TORNADO_ITERATIONS);
+        const growth = p.gMax > 0 ? [p.gMin, p.gMax] : null;
+        const p85End = (sim) => endDay(p, stats(sim.sprints).quantile(0.85));
+        const run = (o) => p85End(simulate(p, Object.assign({ n, light: true, growth }, o)));
+        const base = n === p.iterations ? endDay(p, mainB.pct.p85) : run({});
+
+        const sorted = p.throughput.slice().sort((a, b) => a - b);
+        const half = Math.ceil(sorted.length / 2);
+        const low = sorted.slice(0, half), high = sorted.slice(sorted.length - half);
+
+        const factors = [];
+        factors.push({
+            name: 'Throughput ±20%',
+            goodLabel: 'throughput +20%', badLabel: 'throughput −20%',
+            good: run({ scale: 1.2 }), bad: run({ scale: 0.8 })
+        });
+        if (sorted.length > 1 && low.some((v) => v > 0)) {
+            factors.push({
+                name: 'Historia throughputu',
+                goodLabel: 'tylko lepsze Sprinty (' + high.join(', ') + ')', badLabel: 'tylko słabsze Sprinty (' + low.join(', ') + ')',
+                good: run({ throughput: high }), bad: run({ throughput: low })
+            });
+        }
+        if (p.gMax > 0) {
+            factors.push({
+                name: 'Wzrost zakresu 0–' + fmtN(p.gMax) + '%',
+                goodLabel: 'brak nowych wymagań (0%)', badLabel: 'górna granica wzrostu (' + fmtN(p.gMax) + '%)',
+                good: run({ growth: null }), bad: run({ growth: [p.gMax, p.gMax] })
+            });
+        }
+        factors.push({
+            name: 'Backlog ±10%',
+            goodLabel: 'backlog −10% (' + Math.max(1, Math.round(p.backlog * 0.9)) + ')', badLabel: 'backlog +10% (' + Math.round(p.backlog * 1.1) + ')',
+            good: run({ backlog: Math.max(1, Math.round(p.backlog * 0.9)) }), bad: run({ backlog: Math.round(p.backlog * 1.1) })
+        });
+        factors.forEach((f) => {
+            f.goodDelta = f.good - base;
+            f.badDelta = f.bad - base;
+            f.swing = Math.abs(f.bad - f.good);
+        });
+        factors.sort((a, b) => b.swing - a.swing);
+        return { base, n, factors };
+    }
+
+    function compute(p) {
+        p.deadlineSprints = sprintsUntil(p, p.deadlineDay);
+        const tpMean = p.throughput.reduce((s, v) => s + v, 0) / p.throughput.length;
+        const tpSd = Math.sqrt(p.throughput.reduce((s, v) => s + (v - tpMean) * (v - tpMean), 0) / p.throughput.length);
+        const A = summarize(simulate(p, { n: p.iterations }));
+        const B = summarize(simulate(p, { n: p.iterations, growth: [p.gMin, p.gMax] }));
+        const r = { p, A, B, tpMean, tpSd, months: monthEnds(p), year: toDate(p.startDay).getUTCFullYear() };
+        r.tornado = tornado(p, B);
+        r.risk = riskLevel(r);
+        return r;
+    }
+
+    function riskLevel(r) {
+        const { p, A, B } = r;
+        const spreadW = (B.pct.p95 - B.pct.p50) * p.sprintDays / 7;
+        const scopeW = (B.pct.p85 - A.pct.p85) * p.sprintDays / 7;
+        const cv = r.tpMean > 0 ? r.tpSd / r.tpMean : 0;
+        let score = 0;
+        score += spreadW > 8 ? 2 : spreadW > 4 ? 1 : 0;
+        score += scopeW > 6 ? 2 : scopeW > 2 ? 1 : 0;
+        score += cv > 0.5 ? 2 : cv > 0.3 ? 1 : 0;
+        const level = score >= 4 ? { key: 'high', label: 'Wysokie' } : score >= 2 ? { key: 'mid', label: 'Umiarkowane' } : { key: 'low', label: 'Niskie' };
+        return Object.assign(level, { spreadW, scopeW, cv, score });
+    }
+
+    // ---------- HTML builders ----------
+    const tip = (label, text) => '<span class="adv-tip" tabindex="0" data-tip="' + text + '">' + label + '</span>';
+    const TIP = {
+        p50: 'P50 (mediana) – połowa symulacji kończy się do tej daty. Tylko 50% szans na dotrzymanie.',
+        p85: 'P85 – 85% symulacji kończy się do tej daty. Rekomendowany poziom do planowania.',
+        p95: 'P95 – 95% symulacji kończy się do tej daty. Termin z buforem na ryzyko.',
+        items: 'Co najmniej tyle elementów pierwotnego backlogu ukończy 85% symulacji (pełne Sprinty zakończone do terminu).'
+    };
+
+    function tilesHTML(r, key) {
+        const { p } = r;
+        const S = r[key];
+        const cls = key === 'B' ? 'adv-tile b' : 'adv-tile';
+        const tile = (label, value, note) =>
+            '<div class="' + cls + '"><div class="adv-tile-label">' + label + '</div><div class="adv-tile-value">' + value + '</div><div class="adv-tile-note">' + note + '</div></div>';
+        const dateTile = (name, tipText, s, note) => tile(tip(name, tipText) + ' zakończenia', fmtDate(endDay(p, s)), sprintsWord(s) + ' · ' + note);
+        let itemsNote = 'z ' + p.backlog + ' pierwotnych · P50: ' + S.it.p50 + ' · P95: ' + S.it.p95;
+        if (key === 'B') itemsNote += ' · łącznie z nowymi ≥ ' + S.itAll.p85;
+        return [
+            dateTile('P50', TIP.p50, S.pct.p50, '50% szans'),
+            dateTile('P85', TIP.p85, S.pct.p85, '85% szans'),
+            dateTile('P95', TIP.p95, S.pct.p95, '95% szans'),
+            tile(tip('Elementy do ' + fmtDate(p.deadlineDay), TIP.items), '≥ ' + S.it.p85 + ' <small style="font-size:0.55em;font-weight:600;">(P85)</small>', itemsNote)
+        ].join('');
+    }
+
+    function answersList(r) {
+        const { p, A, B, months } = r;
+        const dl = fmtDate(p.deadlineDay);
+        const req = months.filter((m) => m.required);
+        const L = [];
+        const scenarios = [['A', A, 'bez nowych wymagań'], ['B', B, '+' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '% nowych wymagań']];
+        scenarios.forEach(([name, S, desc]) => {
+            L.push('<strong>Scenariusz ' + name + ' (' + desc + '):</strong> z 85% prawdopodobieństwem backlog zostanie ukończony do <strong>' + fmtDate(endDay(p, S.pct.p85)) +
+                '</strong> (50%: ' + fmtDate(endDay(p, S.pct.p50)) + ', 95%: ' + fmtDate(endDay(p, S.pct.p95)) + ').');
+            L.push('Scenariusz ' + name + ': do ' + dl + ' z 85% prawdopodobieństwem zostanie dostarczonych co najmniej <strong>' + S.it.p85 + '</strong> z ' + p.backlog +
+                ' elementów pierwotnego backlogu (50%: ' + S.it.p50 + ', 95%: ' + S.it.p95 + ')' +
+                (name === 'B' ? '; łącznie z nowymi wymaganiami co najmniej ' + S.itAll.p85 + '.' : '.'));
+            L.push('Scenariusz ' + name + ': szansa ukończenia całego backlogu – ' +
+                req.map((m) => 'do końca ' + m.gen + ': <strong>' + fmtPct(S.sp.cdf(m.sprints)) + '</strong>').join(', ') + '.');
+        });
+        const meanShiftW = (B.sp.mean - A.sp.mean) * p.sprintDays / 7;
+        const p85ShiftW = (B.pct.p85 - A.pct.p85) * p.sprintDays / 7;
+        L.push('Dodanie ' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '% nowych wymagań przesuwa datę dostarczenia średnio o <strong>' + fmtN(meanShiftW, 1) +
+            ' tyg.</strong>, a termin P85 o ' + fmtN(p85ShiftW, 1) + ' tyg. (z ' + fmtDate(endDay(p, A.pct.p85)) + ' na ' + fmtDate(endDay(p, B.pct.p85)) + ').');
+        const dItems = B.it.p85 - A.it.p85;
+        L.push(dItems < 0
+            ? 'Do ' + dl + ' wzrost zakresu zmniejsza prognozę dla pierwotnego backlogu z ≥ ' + A.it.p85 + ' do ≥ ' + B.it.p85 + ' elementów (P85), bo część przepustowości pochłaniają nowe wymagania.'
+            : 'Do ' + dl + ' wzrost zakresu nie zmienia prognozy P85 dla pierwotnego backlogu (≥ ' + A.it.p85 + ' elementów).');
+        L.push('Termin P85 ze scenariusza A (' + fmtDate(endDay(p, A.pct.p85)) + ') przy wzroście zakresu ma tylko <strong>' + fmtPct(B.sp.cdf(A.pct.p85)) + '</strong> szans na dotrzymanie.');
+        return L;
+    }
+
+    function managerHTML(r) {
+        const { p, A, B, risk } = r;
+        const useB = p.gMax > 0;
+        const S = useB ? B : A;
+        const warnings = [];
+        const dlProbA = A.sp.cdf(p.deadlineSprints), dlProbB = B.sp.cdf(p.deadlineSprints);
+        const lastReq = r.months.filter((m) => m.required).pop();
+        if (dlProbA < 0.5) warnings.push('Ukończenie całego backlogu do ' + fmtDate(p.deadlineDay) + ' jest mało realne: ' + fmtPct(dlProbA) + ' w scenariuszu A i ' + fmtPct(dlProbB) + ' w B.');
+        if (lastReq && A.sp.cdf(lastReq.sprints) < 0.85) warnings.push('Nawet bez nowych wymagań szansa ukończenia do końca ' + lastReq.gen + ' ' + lastReq.year + ' wynosi tylko ' + fmtPct(A.sp.cdf(lastReq.sprints)) + '.');
+        const share = A.it.p85 / p.backlog;
+        if (share < 1) warnings.push('Do ' + fmtDate(p.deadlineDay) + ' realnie (P85) powstanie ok. ' + fmtPct(share, 0) + ' backlogu (' + A.it.p85 + ' z ' + p.backlog + ') – ustal, które elementy są krytyczne.');
+        if (risk.scopeW > 2) {
+            const per10 = risk.scopeW / (((p.gMin + p.gMax) / 2) / 10);
+            warnings.push('Wzrost zakresu przesuwa P85 o ' + fmtN(risk.scopeW, 1) + ' tyg. – każde 10% nowych wymagań to ok. ' + fmtN(per10, 1) + ' tyg. opóźnienia. Kontroluj napływ nowej pracy.');
+        }
+        if (risk.cv > 0.3) warnings.push('Wysoka zmienność throughputu (współczynnik zmienności ' + fmtPct(risk.cv, 0) + ') poszerza przedział prognozy.');
+        if (p.throughput.length < 10) warnings.push('Krótka historia (' + p.throughput.length + ' Sprintów) – prognoza może być niestabilna.');
+        if (p.throughput.includes(0)) warnings.push('Historia zawiera Sprinty z zerowym throughputem – traktujemy je jako realne ryzyko.');
+        warnings.push('Prognoza zakłada, że przyszłe Sprinty będą podobne do ' + p.throughput.length + ' historycznych. Aktualizuj ją po każdym Sprincie.');
+
+        return '<div class="adv-mgr-block"><h4>Rekomendowana data planowania</h4>' +
+            '<div class="adv-recommend">' + fmtDate(endDay(p, S.pct.p85)) + '</div>' +
+            '<div class="adv-note">P85 scenariusza ' + (useB ? 'B (zakłada napływ ' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '% nowych wymagań)' : 'A') +
+            '. Termin zobowiązania z buforem (P95): <strong>' + fmtDate(endDay(p, S.pct.p95)) + '</strong>. Nie komunikuj P50 (' + fmtDate(endDay(p, S.pct.p50)) + ') – to tylko 50% szans.</div></div>' +
+            '<div class="adv-mgr-block"><h4>Poziom ryzyka</h4><span class="adv-badge ' + risk.key + '">' + risk.label + '</span>' +
+            '<div class="adv-note" style="margin-top:6px;">Rozrzut P50–P95 (B): ' + fmtN(risk.spreadW, 1) + ' tyg. · wpływ zakresu na P85: ' + fmtSigned(risk.scopeW) + ' tyg. · zmienność throughputu: ' + fmtPct(risk.cv, 0) + '</div></div>' +
+            '<div class="adv-mgr-block"><h4>Ostrzeżenia</h4><ul class="adv-warn">' + warnings.map((w) => '<li>⚠️ ' + w + '</li>').join('') + '</ul></div>';
+    }
+
+    const deltaSpan = (x, unit, digits, higherIsWorse) => {
+        if (Math.abs(x) < 1e-9) return '<span>bez zmian</span>';
+        const worse = higherIsWorse ? x > 0 : x < 0;
+        return '<span class="' + (worse ? 'adv-delta-up' : 'adv-delta-down') + '">' + fmtSigned(x, digits) + ' ' + unit + '</span>';
+    };
+
+    function impactTable(r) {
+        const { p, A, B, months } = r;
+        const len = p.sprintDays;
+        const wk = (sA, sB) => (sB - sA) * len / 7;
+        const lastReq = months.filter((m) => m.required).pop();
+        const rows = [];
+        rows.push(['group', 'Termin dostarczenia']);
+        [['P50', 'p50'], ['P85', 'p85'], ['P95', 'p95']].forEach(([lbl, k]) => {
+            rows.push([lbl, fmtDate(endDay(p, A.pct[k])), fmtDate(endDay(p, B.pct[k])), deltaSpan(wk(A.pct[k], B.pct[k]), 'tyg.', 1, true)]);
+        });
+        rows.push(['Średnia', fmtDate(endDay(p, Math.round(A.sp.mean * len) / len)), fmtDate(endDay(p, Math.round(B.sp.mean * len) / len)), deltaSpan(wk(A.sp.mean, B.sp.mean), 'tyg.', 1, true)]);
+        rows.push(['group', 'Elementy pierwotnego backlogu do ' + fmtDate(p.deadlineDay)]);
+        [['P50', 'p50'], ['P85', 'p85'], ['P95', 'p95']].forEach(([lbl, k]) => {
+            rows.push([lbl + ' (co najmniej)', A.it[k], B.it[k], deltaSpan(B.it[k] - A.it[k], 'el.', 0, false)]);
+        });
+        rows.push(['Średnia', fmtN(A.items.mean, 1), fmtN(B.items.mean, 1), deltaSpan(B.items.mean - A.items.mean, 'el.', 1, false)]);
+        rows.push(['group', 'Poziom ryzyka']);
+        if (lastReq) rows.push(['Szansa ukończenia do końca ' + lastReq.gen, fmtPct(A.sp.cdf(lastReq.sprints)), fmtPct(B.sp.cdf(lastReq.sprints)), deltaSpan((B.sp.cdf(lastReq.sprints) - A.sp.cdf(lastReq.sprints)) * 100, 'pp', 1, false)]);
+        rows.push(['Szansa dotrzymania P85 ze scen. A', fmtPct(A.sp.cdf(A.pct.p85)), fmtPct(B.sp.cdf(A.pct.p85)), deltaSpan((B.sp.cdf(A.pct.p85) - A.sp.cdf(A.pct.p85)) * 100, 'pp', 1, false)]);
+        rows.push(['Rozrzut P50–P95', fmtN((A.pct.p95 - A.pct.p50) * len / 7, 1) + ' tyg.', fmtN((B.pct.p95 - B.pct.p50) * len / 7, 1) + ' tyg.', deltaSpan(((B.pct.p95 - B.pct.p50) - (A.pct.p95 - A.pct.p50)) * len / 7, 'tyg.', 1, true)]);
+        rows.push(['Odchylenie standardowe terminu', fmtN(A.sp.sd * len / 7, 1) + ' tyg.', fmtN(B.sp.sd * len / 7, 1) + ' tyg.', deltaSpan((B.sp.sd - A.sp.sd) * len / 7, 'tyg.', 1, true)]);
+
+        return '<table><thead><tr><th>Miara</th><th class="num">A: bez nowych wymagań</th><th class="num">B: +' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '%</th><th class="num">Wpływ (B − A)</th></tr></thead><tbody>' +
+            rows.map((row) => row[0] === 'group'
+                ? '<tr class="group"><td colspan="4">' + row[1] + '</td></tr>'
+                : '<tr><td>' + row[0] + '</td><td class="num">' + row[1] + '</td><td class="num">' + row[2] + '</td><td class="num">' + row[3] + '</td></tr>').join('') +
+            '</tbody></table>';
+    }
+
+    function probTable(r) {
+        const { A, B, months } = r;
+        const bar = (v, b) => '<span class="adv-bar' + (b ? ' b' : '') + '" style="width:' + Math.round(v * 60) + 'px"></span>';
+        return '<table><thead><tr><th>Termin</th><th>Data</th><th class="num">Sprinty do terminu</th><th class="num">A: bez nowych wymagań</th><th class="num">B: wzrost zakresu</th><th class="num">Różnica</th></tr></thead><tbody>' +
+            months.map((m) => {
+                const a = A.sp.cdf(m.sprints), b = B.sp.cdf(m.sprints);
+                return '<tr class="' + (m.required ? '' : 'extra') + '"><td>Do końca ' + m.gen + (m.required ? '' : ' <small>(dodatkowo)</small>') + '</td><td>' + fmtDate(m.day) + '</td><td class="num">' + m.sprints +
+                    '</td><td class="num">' + fmtPct(a) + bar(a) + '</td><td class="num">' + fmtPct(b) + bar(b, true) + '</td><td class="num">' + deltaSpan((b - a) * 100, 'pp', 1, false) + '</td></tr>';
+            }).join('') + '</tbody></table>';
+    }
+
+    function statsTable(r) {
+        const { p, A, B } = r;
+        const len = p.sprintDays;
+        const d = (s) => fmtDate(endDay(p, s));
+        const meanDate = (S) => fmtDate(p.startDay + Math.round(S.sp.mean * len) - 1);
+        const rows = [];
+        rows.push(['group', 'Data ukończenia całego backlogu']);
+        [['A', A], ['B', B]].forEach(([k, S]) => rows.push([k, meanDate(S), d(S.sp.quantile(0.5)), d(S.pct.p85), d(S.pct.p95), '± ' + fmtN(S.sp.sd * len, 1) + ' dni (' + fmtN(S.sp.sd * len / 7, 1) + ' tyg.)']));
+        rows.push(['group', 'Liczba Sprintów do ukończenia']);
+        [['A', A], ['B', B]].forEach(([k, S]) => rows.push([k, fmtN(S.sp.mean, 2), S.sp.quantile(0.5), S.pct.p85, S.pct.p95, fmtN(S.sp.sd, 2)]));
+        rows.push(['group', 'Elementy pierwotnego backlogu do ' + fmtDate(p.deadlineDay)]);
+        [['A', A], ['B', B]].forEach(([k, S]) => rows.push([k, fmtN(S.items.mean, 2), S.it.p50, '≥ ' + S.it.p85, '≥ ' + S.it.p95, fmtN(S.items.sd, 2)]));
+        rows.push(['group', 'Wszystkie elementy (z nowymi) do ' + fmtDate(p.deadlineDay)]);
+        rows.push(['B', fmtN(B.itemsAll.mean, 2), B.itAll.p50, '≥ ' + B.itAll.p85, '≥ ' + B.itAll.p95, fmtN(B.itemsAll.sd, 2)]);
+        rows.push(['group', 'Wielkość backlogu po wzroście zakresu']);
+        rows.push(['B', fmtN(B.totals.mean, 2), B.totals.quantile(0.5), B.totals.quantile(0.85), B.totals.quantile(0.95), fmtN(B.totals.sd, 2)]);
+        return '<table><thead><tr><th>Scenariusz</th><th class="num">Średnia</th><th class="num">Mediana (P50)</th><th class="num">P85</th><th class="num">P95</th><th class="num">Odch. standardowe</th></tr></thead><tbody>' +
+            rows.map((row) => row[0] === 'group'
+                ? '<tr class="group"><td colspan="6">' + row[1] + '</td></tr>'
+                : '<tr><td>' + row[0] + '</td>' + row.slice(1).map((c) => '<td class="num">' + c + '</td>').join('') + '</tr>').join('') +
+            '</tbody></table>';
+    }
+
+    function assumptionsHTML(r) {
+        const { p } = r;
+        return [
+            fmtN(p.iterations) + ' iteracji na scenariusz; w każdym Sprincie losujemy z powtórzeniami jedną wartość z ' + p.throughput.length + ' historycznych Sprintów (' + p.throughput.join(', ') + ').',
+            'Sprint ' + p.sprintDays + '-dniowy; pierwszy obejmuje ' + fmtDate(p.startDay) + ' i kolejne ' + (p.sprintDays - 1) + ' dni. Ukończenia raportowane są na koniec Sprintu, bez części proporcjonalnych.',
+            'Do ' + fmtDate(p.deadlineDay) + ' wliczamy ' + sprintsWord(p.deadlineSprints) + (p.deadlineSprints > 0 ? ' (ostatni kończy się ' + fmtDate(endDay(p, p.deadlineSprints)) + ').' : ' – termin przypada przed końcem pierwszego Sprintu, więc prognoza wynosi 0 elementów.'),
+            'Scenariusz B: w każdej iteracji losujemy wzrost z rozkładu jednostajnego ' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '% (zaokrąglony do pełnych elementów). Nowe wymagania są wplatane w backlog proporcjonalnie, więc część przepustowości przed terminem trafia do nich.',
+            'Oba scenariusze i analiza tornado używają tych samych losowań (wspólne liczby losowe, ziarno ' + p.seed + '), dlatego różnice wynikają wyłącznie ze zmienionego czynnika.'
+        ].map((t) => '<li>' + t + '</li>').join('');
+    }
+
+    // ---------- charts ----------
+    const annotPlugin = {
+        id: 'advAnnot',
+        beforeDraw(chart) {
+            const ctx = chart.ctx;
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, chart.width, chart.height);
+            ctx.restore();
+        },
+        afterDatasetsDraw(chart, _args, opts) {
+            const { ctx, chartArea: a, scales } = chart;
+            ctx.save();
+            ctx.font = '600 11px "Segoe UI", sans-serif';
+            (opts.vlines || []).forEach((l, i) => {
+                const x = scales.x.getPixelForValue(l.value);
+                if (!Number.isFinite(x) || x < a.left - 1 || x > a.right + 1) return;
+                ctx.strokeStyle = l.color; ctx.fillStyle = l.color; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+                ctx.beginPath(); ctx.moveTo(x, a.top); ctx.lineTo(x, a.bottom); ctx.stroke();
+                ctx.setLineDash([]);
+                const w = ctx.measureText(l.label).width;
+                const tx = x + 4 + w > a.right ? x - 4 - w : x + 4;
+                ctx.fillText(l.label, tx, a.top + 12 + i * 14);
+            });
+            (opts.hlines || []).forEach((l) => {
+                const y = scales.y.getPixelForValue(l.value);
+                ctx.strokeStyle = l.color; ctx.fillStyle = l.color; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+                ctx.beginPath(); ctx.moveTo(a.left, y); ctx.lineTo(a.right, y); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillText(l.label, a.left + 6, y - 4);
+            });
+            ctx.restore();
+        }
+    };
+
+    function makeChart(key, canvasId, config) {
+        if (charts[key]) charts[key].destroy();
+        config.plugins = [annotPlugin];
+        config.options = Object.assign({ responsive: true, maintainAspectRatio: false, animation: { duration: 300 } }, config.options);
+        charts[key] = new Chart($(canvasId), config);
+    }
+
+    const axisStyle = (extra) => Object.assign({ grid: { color: C.grid }, ticks: { color: C.ink } }, extra || {});
+    const legend = { labels: { color: C.ink, usePointStyle: true, boxWidth: 8 } };
+
+    function renderCdf(r) {
+        const { p, A, B } = r;
+        const lo = Math.max(1, Math.min(A.sp.min, B.sp.min) - 1);
+        const hi = Math.max(A.sp.max, B.sp.max);
+        const sprints = [], labels = [], dA = [], dB = [];
+        for (let s = lo; s <= hi; s++) {
+            sprints.push(s);
+            labels.push(fmtAxisDate(endDay(p, s), r.year));
+            dA.push(+(A.sp.cdf(s) * 100).toFixed(2));
+            dB.push(+(B.sp.cdf(s) * 100).toFixed(2));
+        }
+        makeChart('cdf', 'advCdf', {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'A: bez nowych wymagań', data: dA, borderColor: C.a, backgroundColor: C.aFill, fill: true, borderWidth: 2.5, pointRadius: 2.5, tension: 0.25 },
+                    { label: 'B: +' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '% zakresu', data: dB, borderColor: C.b, backgroundColor: C.bFill, fill: true, borderWidth: 2.5, borderDash: [6, 3], pointRadius: 2.5, tension: 0.25 }
+                ]
+            },
+            options: {
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: axisStyle({ min: 0, max: 100, ticks: { color: C.ink, callback: (v) => v + '%' }, title: { display: true, text: 'Prawdopodobieństwo ukończenia', color: C.ink } }),
+                    x: axisStyle({ ticks: { color: C.ink, maxRotation: 0, autoSkip: true, autoSkipPadding: 12 }, title: { display: true, text: 'Koniec Sprintu', color: C.ink } })
+                },
+                plugins: {
+                    legend,
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => 'Sprint ' + sprints[items[0].dataIndex] + ' – ' + fmtDate(endDay(p, sprints[items[0].dataIndex])),
+                            label: (it) => it.dataset.label + ': ' + fmtN(it.parsed.y, 1) + '% szans ukończenia'
+                        }
+                    },
+                    advAnnot: { hlines: [
+                        { value: 50, label: '50%', color: C.p50 },
+                        { value: 85, label: '85%', color: C.p85 },
+                        { value: 95, label: '95%', color: C.p95 }
+                    ] }
+                }
+            }
+        });
+    }
+
+    function renderHist(r) {
+        const { p } = r;
+        const S = r[histScenario];
+        const lo = S.sp.min, hi = S.sp.max;
+        const sprints = [], labels = [], data = [];
+        for (let s = lo; s <= hi; s++) {
+            sprints.push(s);
+            labels.push(fmtAxisDate(endDay(p, s), r.year));
+            data.push(+(S.sp.share(s) * 100).toFixed(3));
+        }
+        const color = histScenario === 'A' ? C.a : C.b;
+        makeChart('hist', 'advHist', {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Scenariusz ' + histScenario, data, backgroundColor: color + 'b3', borderColor: color, borderWidth: 1, borderRadius: 4 }] },
+            options: {
+                scales: {
+                    y: axisStyle({ beginAtZero: true, ticks: { color: C.ink, callback: (v) => v + '%' }, title: { display: true, text: 'Odsetek symulacji', color: C.ink } }),
+                    x: axisStyle({ grid: { display: false }, ticks: { color: C.ink, maxRotation: 0, autoSkip: true, autoSkipPadding: 8 } })
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => 'Sprint ' + sprints[items[0].dataIndex] + ' – ' + fmtDate(endDay(p, sprints[items[0].dataIndex])),
+                            label: (it) => fmtN(it.parsed.y, 2) + '% symulacji kończy w tym Sprincie'
+                        }
+                    },
+                    advAnnot: { vlines: [
+                        { value: S.pct.p50 - lo, label: 'P50', color: C.p50 },
+                        { value: S.pct.p85 - lo, label: 'P85', color: C.p85 },
+                        { value: S.pct.p95 - lo, label: 'P95', color: C.p95 }
+                    ] }
+                }
+            }
+        });
+    }
+
+    function renderItems(r) {
+        const { p, A, B } = r;
+        const lo = Math.min(A.items.min, B.items.min), hi = Math.max(A.items.max, B.items.max);
+        const labels = [], dA = [], dB = [];
+        for (let v = lo; v <= hi; v++) {
+            labels.push(String(v));
+            dA.push(+(A.items.share(v) * 100).toFixed(3));
+            dB.push(+(B.items.share(v) * 100).toFixed(3));
+        }
+        makeChart('items', 'advItems', {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'A: bez nowych wymagań', data: dA, backgroundColor: C.a + 'b3', borderColor: C.a, borderWidth: 1, borderRadius: 3 },
+                    { label: 'B: pierwotne elementy', data: dB, backgroundColor: C.b + '80', borderColor: C.b, borderWidth: 1, borderRadius: 3 }
+                ]
+            },
+            options: {
+                scales: {
+                    y: axisStyle({ beginAtZero: true, ticks: { color: C.ink, callback: (v) => v + '%' }, title: { display: true, text: 'Odsetek symulacji', color: C.ink } }),
+                    x: axisStyle({ grid: { display: false }, ticks: { color: C.ink, maxRotation: 0, autoSkip: true }, title: { display: true, text: 'Ukończone elementy pierwotnego backlogu (z ' + p.backlog + ')', color: C.ink } })
+                },
+                plugins: {
+                    legend,
+                    tooltip: { callbacks: { title: (items) => items[0].label + ' elementów', label: (it) => it.dataset.label + ': ' + fmtN(it.parsed.y, 2) + '% symulacji' } },
+                    advAnnot: { vlines: [
+                        { value: A.it.p85 - lo, label: 'P85 A: ' + A.it.p85, color: C.a },
+                        { value: B.it.p85 - lo, label: 'P85 B: ' + B.it.p85, color: C.b }
+                    ] }
+                }
+            }
+        });
+    }
+
+    function renderComparison(r) {
+        const { p, A, B } = r;
+        const len = p.sprintDays;
+        const off = (s) => s * len - 1;
+        const labels = ['P50', 'P85', 'P95', 'Średnia'];
+        const datesOf = (S) => [off(S.pct.p50), off(S.pct.p85), off(S.pct.p95), Math.round(S.sp.mean * len) - 1];
+        makeChart('cmpDates', 'advCmpDates', {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'A: bez nowych wymagań', data: datesOf(A), backgroundColor: C.a + 'cc', borderRadius: 6 },
+                    { label: 'B: +' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '%', data: datesOf(B), backgroundColor: C.b + 'cc', borderRadius: 6 }
+                ]
+            },
+            options: {
+                scales: {
+                    y: axisStyle({ beginAtZero: true, ticks: { color: C.ink, callback: (v) => fmtAxisDate(p.startDay + v, r.year) } }),
+                    x: axisStyle({ grid: { display: false } })
+                },
+                plugins: { legend, tooltip: { callbacks: { label: (it) => it.dataset.label + ': ' + fmtDate(p.startDay + it.parsed.y) + ' (' + fmtN((it.parsed.y + 1) / 7, 1) + ' tyg. od startu)' } } }
+            }
+        });
+        makeChart('cmpItems', 'advCmpItems', {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'A: bez nowych wymagań', data: [A.it.p50, A.it.p85, A.it.p95, +A.items.mean.toFixed(1)], backgroundColor: C.a + 'cc', borderRadius: 6 },
+                    { label: 'B: pierwotne elementy', data: [B.it.p50, B.it.p85, B.it.p95, +B.items.mean.toFixed(1)], backgroundColor: C.b + 'cc', borderRadius: 6 },
+                    { label: 'B: łącznie z nowymi', data: [B.itAll.p50, B.itAll.p85, B.itAll.p95, +B.itemsAll.mean.toFixed(1)], backgroundColor: C.bLight, borderRadius: 6 }
+                ]
+            },
+            options: {
+                scales: { y: axisStyle({ beginAtZero: true, title: { display: true, text: 'Elementy (co najmniej)', color: C.ink } }), x: axisStyle({ grid: { display: false } }) },
+                plugins: { legend, tooltip: { callbacks: { label: (it) => it.dataset.label + ': ' + fmtN(it.parsed.y, it.dataIndex === 3 ? 1 : 0) + ' el.' } } }
+            }
+        });
+    }
+
+    function renderTornado(r) {
+        const { p, tornado: t } = r;
+        const f = t.factors;
+        makeChart('tornado', 'advTornado', {
+            type: 'bar',
+            data: {
+                labels: f.map((x) => x.name),
+                datasets: [
+                    { label: 'Wariant niekorzystny', data: f.map((x) => [0, x.badDelta / 7]), backgroundColor: C.bad, borderRadius: 4, grouped: false, barPercentage: 0.6 },
+                    { label: 'Wariant korzystny', data: f.map((x) => [0, x.goodDelta / 7]), backgroundColor: C.good, borderRadius: 4, grouped: false, barPercentage: 0.6 }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                scales: {
+                    x: axisStyle({ ticks: { color: C.ink, callback: (v) => fmtSigned(v, 0) + ' tyg.' }, title: { display: true, text: 'Zmiana terminu P85 (tygodnie)', color: C.ink } }),
+                    y: axisStyle({ grid: { display: false } })
+                },
+                plugins: {
+                    legend,
+                    tooltip: {
+                        callbacks: {
+                            label: (it) => {
+                                const x = f[it.dataIndex];
+                                const bad = it.datasetIndex === 0;
+                                const day = bad ? x.bad : x.good;
+                                return (bad ? x.badLabel : x.goodLabel) + ': P85 = ' + fmtDate(day) + ' (' + fmtSigned((day - t.base) / 7) + ' tyg.)';
+                            }
+                        }
+                    },
+                    advAnnot: { vlines: [{ value: 0, label: 'P85 B: ' + fmtDate(t.base), color: C.p85 }] }
+                }
+            }
+        });
+        $('advTornadoCap').textContent = 'Punkt odniesienia: P85 scenariusza B (' + fmtDate(t.base) + '). Każdy pasek pokazuje, jak przesuwa się P85 po zmianie jednego czynnika przy pozostałych bez zmian (' +
+            fmtN(t.n) + ' iteracji na wariant). Najdłuższe paski = największy wpływ na termin.';
+    }
+
+    // ---------- render ----------
+    function render(r) {
+        const { p } = r;
+        $('advOutput').hidden = false;
+        $('advMeta').textContent = fmtN(p.iterations) + ' iteracji × 2 scenariusze · ziarno ' + p.seed + ' · ' + fmtN(r.ms) + ' ms';
+        $('advScnB').textContent = 'Scenariusz B – wzrost zakresu o ' + fmtN(p.gMin) + '–' + fmtN(p.gMax) + '% (średnio ' + fmtN(r.B.totals.mean, 1) + ' elementów zamiast ' + p.backlog + ')';
+        $('advScnA').textContent = 'Scenariusz A – brak nowych wymagań (' + p.backlog + ' elementów)';
+        $('advTilesA').innerHTML = tilesHTML(r, 'A');
+        $('advTilesB').innerHTML = tilesHTML(r, 'B');
+        $('advAnswers').innerHTML = answersList(r).map((t) => '<li>✅ ' + t + '</li>').join('');
+        $('advManager').innerHTML = managerHTML(r);
+        $('advImpact').innerHTML = impactTable(r);
+        $('advProb').innerHTML = probTable(r);
+        $('advStats').innerHTML = statsTable(r);
+        $('advAssumptions').innerHTML = assumptionsHTML(r);
+        $('advItemsTitle').textContent = 'Elementy dostarczone do ' + fmtDate(p.deadlineDay);
+        $('advCmpCap').textContent = 'Lewy wykres: daty P50/P85/P95 i średnia. Prawy: elementy dostarczone do ' + fmtDate(p.deadlineDay) + ' (dla percentyli – liczba osiągana co najmniej z danym prawdopodobieństwem).';
+        if (typeof Chart === 'undefined') {
+            $('advStatus').textContent = 'Nie udało się załadować biblioteki wykresów (Chart.js). Tabele i odpowiedzi są dostępne.';
+            return;
+        }
+        renderCdf(r);
+        renderHist(r);
+        renderItems(r);
+        renderComparison(r);
+        renderTornado(r);
+    }
+
+    function showError(list) {
+        const box = $('advError');
+        box.innerHTML = '';
+        const strong = document.createElement('strong');
+        strong.textContent = 'Popraw dane wejściowe:';
+        box.appendChild(strong);
+        const ul = document.createElement('ul');
+        ul.style.margin = '6px 0 0 18px';
+        list.forEach((m) => { const li = document.createElement('li'); li.textContent = m; ul.appendChild(li); });
+        box.appendChild(ul);
+        box.hidden = false;
+        $('advOutput').hidden = true;
+        $('advStatus').textContent = '';
+        state = null;
+    }
+
+    function run() {
+        let p;
+        try {
+            p = readInputs();
+        } catch (e) {
+            showError(e.list || [e.message]);
+            return;
+        }
+        $('advError').hidden = true;
+        const btn = $('advRunBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Trwa symulacja…';
+        $('advStatus').textContent = 'Symuluję ' + fmtN(p.iterations) + ' iteracji dla dwóch scenariuszy i analizę wrażliwości…';
+        setTimeout(() => {
+            try {
+                const t0 = performance.now();
+                const r = compute(p);
+                r.ms = performance.now() - t0;
+                state = r;
+                hasRun = true;
+                render(r);
+                $('advStatus').textContent = 'Gotowe. Zmień parametry, aby przeliczyć prognozę.';
+            } catch (e) {
+                showError([e.message]);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '↻ Uruchom ponownie symulację';
+            }
+        }, 20);
+    }
+
+    // ---------- export ----------
+    function download(filename, href) {
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    function exportCsv() {
+        if (!state) { $('advStatus').textContent = 'Najpierw uruchom symulację.'; return; }
+        const { p, A, B, months, tornado: t } = state;
+        const len = p.sprintDays;
+        const dec = (x, d = 2) => Number(x).toFixed(d).replace('.', ',');
+        const rows = [];
+        rows.push(['Monte Carlo 2026 – Advanced Forecast']);
+        rows.push(['Parametr', 'Wartość']);
+        rows.push(['Backlog (elementy)', p.backlog]);
+        rows.push(['Throughput historyczny', p.throughput.join(' ')]);
+        rows.push(['Start prac', isoDate(p.startDay)]);
+        rows.push(['Termin prognozy elementów', isoDate(p.deadlineDay)]);
+        rows.push(['Długość Sprintu (dni)', len]);
+        rows.push(['Iteracje na scenariusz', p.iterations]);
+        rows.push(['Wzrost zakresu B (%)', p.gMin + '-' + p.gMax]);
+        rows.push(['Ziarno', p.seed]);
+        rows.push([]);
+        rows.push(['Statystyka', 'Scenariusz', 'Średnia', 'Mediana', 'P85', 'P95', 'Odchylenie std.']);
+        [['A', A], ['B', B]].forEach(([k, S]) => {
+            rows.push(['Data ukończenia', k, isoDate(p.startDay + Math.round(S.sp.mean * len) - 1), isoDate(endDay(p, S.sp.quantile(0.5))), isoDate(endDay(p, S.pct.p85)), isoDate(endDay(p, S.pct.p95)), dec(S.sp.sd * len, 1) + ' dni']);
+            rows.push(['Liczba Sprintów', k, dec(S.sp.mean), S.sp.quantile(0.5), S.pct.p85, S.pct.p95, dec(S.sp.sd)]);
+            rows.push(['Elementy pierwotne do ' + isoDate(p.deadlineDay) + ' (co najmniej)', k, dec(S.items.mean), S.it.p50, S.it.p85, S.it.p95, dec(S.items.sd)]);
+        });
+        rows.push(['Elementy łącznie z nowymi do ' + isoDate(p.deadlineDay) + ' (co najmniej)', 'B', dec(B.itemsAll.mean), B.itAll.p50, B.itAll.p85, B.itAll.p95, dec(B.itemsAll.sd)]);
+        rows.push(['Wielkość backlogu po wzroście', 'B', dec(B.totals.mean), B.totals.quantile(0.5), B.totals.quantile(0.85), B.totals.quantile(0.95), dec(B.totals.sd)]);
+        rows.push([]);
+        rows.push(['Prawdopodobieństwo ukończenia', 'Data', 'A (%)', 'B (%)']);
+        months.forEach((m) => rows.push(['Do końca ' + m.gen + (m.required ? '' : ' (dodatkowo)'), isoDate(m.day), dec(A.sp.cdf(m.sprints) * 100, 1), dec(B.sp.cdf(m.sprints) * 100, 1)]));
+        rows.push([]);
+        rows.push(['Poziom ryzyka', state.risk.label, 'Rozrzut P50-P95 B (tyg.)', dec(state.risk.spreadW, 1), 'Wpływ zakresu na P85 (tyg.)', dec(state.risk.scopeW, 1)]);
+        rows.push([]);
+        rows.push(['Tornado (P85 B = ' + isoDate(t.base) + ')', 'Wariant korzystny', 'P85', 'Zmiana (tyg.)', 'Wariant niekorzystny', 'P85', 'Zmiana (tyg.)']);
+        t.factors.forEach((f) => rows.push([f.name, f.goodLabel, isoDate(f.good), dec(f.goodDelta / 7, 1), f.badLabel, isoDate(f.bad), dec(f.badDelta / 7, 1)]));
+        rows.push([]);
+        rows.push(['Rozkład terminu: Sprint', 'Koniec Sprintu', 'A (%)', 'A skumulowane (%)', 'B (%)', 'B skumulowane (%)']);
+        for (let s = Math.min(A.sp.min, B.sp.min); s <= Math.max(A.sp.max, B.sp.max); s++) {
+            rows.push([s, isoDate(endDay(p, s)), dec(A.sp.share(s) * 100, 3), dec(A.sp.cdf(s) * 100, 3), dec(B.sp.share(s) * 100, 3), dec(B.sp.cdf(s) * 100, 3)]);
+        }
+        rows.push([]);
+        rows.push(['Rozkład elementów do ' + isoDate(p.deadlineDay) + ': liczba', 'A (%)', 'B pierwotne (%)', 'B łącznie (%)']);
+        for (let v = Math.min(A.items.min, B.items.min); v <= Math.max(A.items.max, B.itemsAll.max); v++) {
+            rows.push([v, dec(A.items.share(v) * 100, 3), dec(B.items.share(v) * 100, 3), dec(B.itemsAll.share(v) * 100, 3)]);
+        }
+        const cell = (c) => {
+            const s = c === undefined || c === null ? '' : String(c);
+            return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        };
+        const csv = '\uFEFF' + rows.map((row) => row.map(cell).join(';')).join('\r\n');
+        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        download('monte-carlo-advanced-forecast.csv', url);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function exportPng(key) {
+        const chart = charts[key];
+        if (!chart) return;
+        download('monte-carlo-' + key + '.png', chart.toBase64Image('image/png', 1));
+    }
+
+    // ---------- wiring ----------
+    function updateBacklogLabel() { $('advBacklogOut').textContent = $('advBacklog').value; }
+    function updateThroughputInfo() {
+        const tp = parseThroughput($('advThroughput').value);
+        const info = $('advThroughputInfo');
+        if (!tp.tokens.length || tp.bad.length) { info.textContent = tp.bad.length ? 'Nieprawidłowe: ' + tp.bad.join(', ') : 'Brak danych'; return; }
+        const n = tp.values.length;
+        const mean = tp.values.reduce((s, v) => s + v, 0) / n;
+        const sd = Math.sqrt(tp.values.reduce((s, v) => s + (v - mean) * (v - mean), 0) / n);
+        info.textContent = sprintsWord(n) + ' · średnio ' + fmtN(mean, 2) + ' · odch. std. ' + fmtN(sd, 2) + ' · zakres ' + Math.min(...tp.values) + '–' + Math.max(...tp.values);
+    }
+    function resetDefaults() {
+        $('advBacklog').value = DEFAULTS.backlog;
+        $('advThroughput').value = DEFAULTS.throughput;
+        $('advStart').value = DEFAULTS.start;
+        $('advDeadline').value = DEFAULTS.deadline;
+        $('advSprintDays').value = DEFAULTS.sprintDays;
+        $('advIterations').value = String(DEFAULTS.iterations);
+        $('advGrowthMin').value = DEFAULTS.growthMin;
+        $('advGrowthMax').value = DEFAULTS.growthMax;
+        $('advSeed').value = DEFAULTS.seed;
+        updateBacklogLabel();
+        updateThroughputInfo();
+        run();
+    }
+
+    $('advBacklog').addEventListener('input', updateBacklogLabel);
+    $('advThroughput').addEventListener('input', updateThroughputInfo);
+    ['advBacklog', 'advThroughput', 'advStart', 'advDeadline', 'advSprintDays', 'advIterations', 'advGrowthMin', 'advGrowthMax', 'advSeed'].forEach((id) => {
+        $(id).addEventListener('change', () => { if (hasRun || state === null) run(); });
+    });
+    $('advThroughput').addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
+    $('advRunBtn').addEventListener('click', run);
+    $('advNewSeedBtn').addEventListener('click', () => { $('advSeed').value = 1 + Math.floor(Math.random() * 999999); run(); });
+    $('advResetBtn').addEventListener('click', resetDefaults);
+    $('advCsvBtn').addEventListener('click', exportCsv);
+    document.querySelectorAll('#advanced [data-png]').forEach((b) => b.addEventListener('click', () => exportPng(b.dataset.png)));
+    document.querySelectorAll('#advanced [data-hist]').forEach((b) => b.addEventListener('click', () => {
+        histScenario = b.dataset.hist;
+        document.querySelectorAll('#advanced [data-hist]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        if (state && typeof Chart !== 'undefined') renderHist(state);
+    }));
+    updateBacklogLabel();
+    updateThroughputInfo();
+
+    window.advOnTabOpen = function () { if (!hasRun) run(); };
+    window.AdvancedForecast = { simulate, stats, compute, readInputs, getState: () => state };
+})();
     </script>
 </body>
 </html>
