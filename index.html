@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monte Carlo 2026</title>
+    <title>Monte Carlo 2026 - Prognoza Projektu</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,127 +16,402 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
         }
         
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
         .container {
+            max-width: 1200px;
+            margin: 0 auto;
             background: white;
             border-radius: 15px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 50px;
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
+            overflow: hidden;
         }
         
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 2.5em;
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #eee;
         }
         
-        .subtitle {
-            color: #667eea;
-            font-size: 1.2em;
-            margin-bottom: 30px;
-            font-weight: 300;
-        }
-        
-        p {
+        .tab-button {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
             color: #666;
-            line-height: 1.8;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab-button:hover {
+            color: #667eea;
+        }
+        
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .tab-content h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        
+        .tab-content h3 {
+            color: #667eea;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-button {
+                font-size: 0.85em;
+                padding: 15px 10px;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+        }
+        
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-field label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .input-field input, .input-field textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 0.95em;
+        }
+        
+        .input-field textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        
+        .slider-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .slider-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        .slider-value {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 50px;
+            text-align: right;
+        }
+        
+        .slider-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 8px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .button {
-            display: inline-block;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .button-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            text-decoration: none;
-            margin-top: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: none;
-            cursor: pointer;
+        }
+        
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .button-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .results {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .result-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
             font-size: 1em;
         }
         
-        .button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-        
-        .features {
-            text-align: left;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid #eee;
-        }
-        
-        .features h3 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-        
-        .features ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        
-        .features li {
-            color: #666;
-            padding: 8px 0;
-            padding-left: 25px;
-            position: relative;
-        }
-        
-        .features li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
+        .result-value {
+            font-size: 1.2em;
             color: #667eea;
-            font-weight: bold;
+            font-weight: 700;
         }
         
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            color: #999;
+        .result-detail {
             font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 30px;
+        }
+        
+        .explanation {
+            background: #e8eef7;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.95em;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .error {
+            background: #fee;
+            border-left: 4px solid #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.95em;
+            color: #c33;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .results {
+                padding: 15px;
+            }
+            
+            .input-group {
+                gap: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header">
         <h1>🎲 Monte Carlo 2026</h1>
-        <p class="subtitle">Zaawansowana symulacja probabilistyczna</p>
-        
-        <p>
-            Projekt Monte Carlo 2026 to nowoczesna platforma do przeprowadzania zaawansowanych symulacji
-            probabilistycznych i analiz statystycznych za pomocą metody Monte Carlo.
-        </p>
-        
-        <div class="features">
-            <h3>Główne cechy:</h3>
-            <ul>
-                <li>Zaawansowane algorytmy symulacji</li>
-                <li>Analiza zmienności i ryzyka</li>
-                <li>Wizualizacja wyników w czasie rzeczywistym</li>
-                <li>Skalowalność i wydajność</li>
-                <li>Interfejs użytkownika przyjazny dla użytkownika</li>
-            </ul>
+        <p>Zaawansowana symulacja probabilistyczna</p>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('home')">🏠 Strona Główna</button>
+            <button class="tab-button" onclick="switchTab('forecast')">📊 Prognoza Monte Carlo</button>
         </div>
         
-        <a href="https://github.com/peq00/Monte-Carlo-2026" class="button">Odwiedź na GitHub</a>
+        <div id="home" class="tab-content active">
+            <h2>Monte Carlo 2026</h2>
+            <p style="color: #666; line-height: 1.8; margin-bottom: 20px;">
+                Projekt Monte Carlo 2026 to nowoczesna platforma do przeprowadzania zaawansowanych symulacji
+                probabilistycznych i analiz statystycznych za pomocą metody Monte Carlo.
+            </p>
+            
+            <div class="features" style="text-align: left; margin-top: 30px;">
+                <h3 style="color: #333; margin-bottom: 15px;">Główne cechy:</h3>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="color: #666; padding: 8px 0; padding-left: 25px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea;">✓</span>
+                        Zaawansowane algorytmy symulacji
+                    </li>
+                    <li style="color: #666; padding: 8px 0; padding-left: 25px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea;">✓</span>
+                        Analiza zmienności i ryzyka
+                    </li>
+                    <li style="color: #666; padding: 8px 0; padding-left: 25px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea;">✓</span>
+                        Wizualizacja wyników w czasie rzeczywistym
+                    </li>
+                    <li style="color: #666; padding: 8px 0; padding-left: 25px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea;">✓</span>
+                        Skalowalność i wydajność
+                    </li>
+                    <li style="color: #666; padding: 8px 0; padding-left: 25px; position: relative;">
+                        <span style="position: absolute; left: 0; color: #667eea;">✓</span>
+                        Interfejs użytkownika przyjazny dla użytkownika
+                    </li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+                <a href="https://github.com/peq00/Monte-Carlo-2026" class="button button-primary" style="display: inline-block; text-decoration: none;">
+                    Odwiedź na GitHub
+                </a>
+            </div>
+        </div>
         
-        <div class="footer">
-            <p>Monte Carlo 2026 © 2026 | Wszystkie prawa zastrzeżone</p>
+        <div id="forecast" class="tab-content">
+            <h2>📊 Prognoza Monte Carlo</h2>
+            
+            <h3>Parametry Symulacji</h3>
+            
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="backlogSize">Liczba elementów backlogu:</label>
+                    <input type="number" id="backlogSize" value="62" min="1">
+                </div>
+                <div class="input-field">
+                    <label for="startDate">Data startu (1. dzień Sprintu):</label>
+                    <input type="date" id="startDate" value="2027-01-04">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="forecastDate">Termin prognozy liczby elementów:</label>
+                    <input type="date" id="forecastDate" value="2027-03-31">
+                </div>
+                <div class="input-field">
+                    <label for="sprintLength">Długość Sprintu (dni):</label>
+                    <input type="number" id="sprintLength" value="14" min="1">
+                </div>
+            </div>
+            
+            <div class="input-field" style="grid-column: 1 / -1;">
+                <label for="velocity">Historyczna przepustowość (liczby rozdzielone przecinkami):</label>
+                <textarea id="velocity" placeholder="5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6">5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6</textarea>
+            </div>
+            
+            <div class="slider-group">
+                <label for="backlogGrowth">Wzrost backlogu:</label>
+                <div class="slider-container">
+                    <input type="range" id="backlogGrowth" min="0" max="100" value="0" step="1">
+                    <span class="slider-value"><span id="growthPercent">0</span>%</span>
+                </div>
+                <div class="slider-info" id="growthInfo"></div>
+            </div>
+            
+            <div class="buttons">
+                <button class="button button-primary" onclick="runSimulation()">🚀 Uruchom Symulację</button>
+                <button class="button button-secondary" onclick="resetDefaults()">↺ Przywróć Domyślne</button>
+            </div>
+            
+            <div id="simulationResults"></div>
         </div>
     </div>
+    
+    <script src="montecarlo.js"></script>
 </body>
 </html>
