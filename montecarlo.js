@@ -17,7 +17,24 @@ function parseVelocity(text) {
     return text.split(',').map(v => {
         const num = parseInt(v.trim());
         return isNaN(num) || num < 0 ? 0 : num;
-    });
+    }).filter(v => v >= 0);
+}
+
+function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function switchTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const buttons = document.querySelectorAll('.tab-button');
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
 }
 
 function runSimulation() {
@@ -36,6 +53,7 @@ function runSimulation() {
             if (!backlogSize || backlogSize <= 0) throw new Error('Backlog musi być > 0');
             if (!velocity || velocity.length === 0) throw new Error('Podaj historię przepustowości');
             if (!startDateStr || !forecastDateStr) throw new Error('Podaj wszystkie daty');
+            if (velocity.every(v => v === 0)) throw new Error('Historia nie może zawierać samych zer');
             
             const startDate = new Date(startDateStr + 'T00:00:00');
             const forecastDate = new Date(forecastDateStr + 'T00:00:00');
@@ -47,59 +65,55 @@ function runSimulation() {
             
             const completionDates = [];
             const itemsCounts = [];
-            const sprintCumulatives = new Array(100).fill(0);
-            const sprintCounts = new Array(100).fill(0);
+            const sprintProbs = new Array(50).fill(0);
+            const sprintTotals = new Array(50).fill(0);
             
             for (let sim = 0; sim < SIMULATIONS; sim++) {
-                const rng = new SeededRandom(sim + 1);
-                let currentDate = new Date(startDate);
+                const rng = new SeededRandom(sim + 42);
                 let completed = 0;
                 let sprintNum = 0;
+                let completionDate = null;
                 
-                while (completed < totalBacklog) {
-                    const sprintEnd = new Date(currentDate);
-                    sprintEnd.setDate(sprintEnd.getDate() + sprintLength - 1);
-                    
+                // Symulacja do ukończenia całego zakresu
+                while (completed < totalBacklog && sprintNum < 50) {
                     const velocityIdx = Math.floor(rng.next() * velocity.length);
                     const velocity_val = velocity[velocityIdx];
                     completed += velocity_val;
                     
-                    if (sprintNum < 100) {
-                        sprintCumulatives[sprintNum] += (completed >= totalBacklog ? 1 : 0);
-                        sprintCounts[sprintNum]++;
+                    const sprintEnd = addDays(startDate, (sprintNum + 1) * sprintLength - 1);
+                    
+                    if (sprintNum < 50) {
+                        sprintTotals[sprintNum]++;
+                        if (completed >= totalBacklog) {
+                            sprintProbs[sprintNum]++;
+                            completionDate = new Date(sprintEnd);
+                        }
                     }
                     
-                    if (completed >= totalBacklog) {
-                        completionDates.push(new Date(sprintEnd));
-                        break;
-                    }
-                    
-                    currentDate = new Date(sprintEnd);
-                    currentDate.setDate(currentDate.getDate() + 1);
                     sprintNum++;
                 }
                 
+                if (completionDate) {
+                    completionDates.push(completionDate);
+                }
+                
+                // Liczenie elementów ukończonych do deadline'u
                 let completedByForecast = 0;
-                currentDate = new Date(startDate);
+                let sprintEnd = addDays(startDate, sprintLength - 1);
                 sprintNum = 0;
-                const rng2 = new SeededRandom(sim + 1);
                 
-                while (currentDate <= forecastDate) {
-                    const sprintEnd = new Date(currentDate);
-                    sprintEnd.setDate(sprintEnd.getDate() + sprintLength - 1);
+                const rng2 = new SeededRandom(sim + 42);
+                while (sprintEnd <= forecastDate && sprintNum < 50) {
+                    const velocityIdx = Math.floor(rng2.next() * velocity.length);
+                    completedByForecast += velocity[velocityIdx];
                     
-                    if (sprintEnd <= forecastDate) {
-                        const velocityIdx = Math.floor(rng2.next() * velocity.length);
-                        completedByForecast += velocity[velocityIdx];
-                    }
-                    
+                    sprintEnd = addDays(startDate, (sprintNum + 2) * sprintLength - 1);
                     sprintNum++;
-                    currentDate = new Date(sprintEnd);
-                    currentDate.setDate(currentDate.getDate() + 1);
                 }
                 
-                completedByForecast = Math.max(0, Math.min(completedByForecast - newItems, backlogSize));
-                itemsCounts.push(completedByForecast);
+                // Ostrożny scenariusz: nowe elementy mogą wypierać pierwotny zakres
+                const reallyCompleted = Math.max(0, Math.min(completedByForecast - newItems, backlogSize));
+                itemsCounts.push(reallyCompleted);
             }
             
             results = {
@@ -112,8 +126,8 @@ function runSimulation() {
                 forecastDate,
                 sprintLength,
                 velocity,
-                sprintCumulatives,
-                sprintCounts
+                sprintProbs,
+                sprintTotals
             };
             
             displayResults(results);
@@ -126,11 +140,16 @@ function runSimulation() {
 function displayResults(r) {
     const resultsDiv = document.getElementById('simulationResults');
     
+    if (r.completionDates.length === 0) {
+        resultsDiv.innerHTML = '<div class="error">❌ Brak danych do wyświetlenia</div>';
+        return;
+    }
+    
     const sortedDates = r.completionDates.slice().sort((a, b) => a - b);
     const idx85 = Math.floor(sortedDates.length * 0.15);
     const idx95 = Math.floor(sortedDates.length * 0.05);
-    const date85 = sortedDates[idx85] || sortedDates[sortedDates.length - 1];
-    const date95 = sortedDates[idx95] || sortedDates[sortedDates.length - 1];
+    const date85 = sortedDates[Math.min(idx85, sortedDates.length - 1)];
+    const date95 = sortedDates[Math.min(idx95, sortedDates.length - 1)];
     
     const sprints85 = calculateSprintsDiff(r.startDate, date85, r.sprintLength);
     const sprints95 = calculateSprintsDiff(r.startDate, date95, r.sprintLength);
@@ -205,8 +224,8 @@ function drawChart(r) {
     const sprintProbs = [];
     const sprintLabels = [];
     
-    for (let i = 0; i < 20 && r.sprintCounts[i] > 0; i++) {
-        const prob = (r.sprintCumulatives[i] / r.sprintCounts[i]) * 100;
+    for (let i = 0; i < 20 && r.sprintTotals[i] > 0; i++) {
+        const prob = (r.sprintProbs[i] / r.sprintTotals[i]) * 100;
         sprintProbs.push(prob);
         sprintLabels.push(`Sprint ${i + 1}`);
     }
@@ -294,17 +313,6 @@ function resetDefaults() {
     document.getElementById('backlogGrowth').value = '0';
     updateGrowthInfo();
     document.getElementById('simulationResults').innerHTML = '';
-}
-
-function switchTab(tabName) {
-    const tabs = document.querySelectorAll('.tab-content');
-    const buttons = document.querySelectorAll('.tab-button');
-    
-    tabs.forEach(tab => tab.classList.remove('active'));
-    buttons.forEach(btn => btn.classList.remove('active'));
-    
-    document.getElementById(tabName).classList.add('active');
-    event.target.classList.add('active');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
