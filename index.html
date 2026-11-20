@@ -510,6 +510,39 @@
             .adv-tip::after { max-width: 200px; }
         }
 
+        /* ===== Prognoza epików (korzysta z klas .adv-*) ===== */
+        .ep-assume { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: #fff1cf; color: #6b4a0b; font-size: 0.75em; font-weight: 600; vertical-align: middle; }
+        .ep-toggle { display: flex; gap: 8px; align-items: flex-start; font-size: 0.88em; font-weight: 600; cursor: pointer; }
+        .ep-toggle input { margin-top: 3px; accent-color: var(--g600); }
+        .ep-note { font-size: 0.8em; color: var(--muted); min-height: 1.2em; }
+        .ep-note.on { color: #6b4a0b; }
+        .adv input[type="range"]:disabled { opacity: 0.45; }
+        .ep-table td { padding: 6px 8px; }
+        .ep-table input[type="text"], .ep-table input[type="number"] { border: 1px solid #c8d6cd; border-radius: 6px; padding: 7px 8px; font: inherit; font-size: 0.92em; width: 100%; color: var(--ink); }
+        .ep-table input[type="text"] { min-width: 110px; }
+        .ep-table input[type="number"] { width: 80px; text-align: right; }
+        .ep-table input[aria-invalid="true"] { border-color: #d39b2a; background: #fff8e8; }
+        .ep-table .ep-order { color: var(--muted); font-variant-numeric: tabular-nums; width: 28px; }
+        .ep-table .ep-actions { display: flex; gap: 4px; }
+        .ep-icon-btn { border: 1px solid #c8d6cd; background: #fff; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; color: var(--g800); font-size: 0.95em; }
+        .ep-icon-btn:hover:not(:disabled) { background: var(--g50); }
+        .ep-icon-btn:disabled { opacity: 0.35; cursor: default; }
+        .ep-sum { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; }
+        .ep-sum strong { color: var(--g800); }
+        .ep-scn-table td:first-child { font-weight: 600; }
+        .ep-scn-table th, .ep-scn-table td { white-space: normal; }
+        .ep-labels { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 4px; font-size: 0.88em; color: var(--ink); }
+        .ep-na { color: var(--muted); font-style: italic; }
+        #epics .adv-scn-label { flex-wrap: wrap; }
+        #epics .adv-scn-label .adv-note { font-weight: 400; }
+        @media (max-width: 540px) {
+            .ep-table td, .ep-table th { padding: 6px 3px; }
+            .ep-table .ep-order, .ep-table th:first-child { display: none; }
+            .ep-table input[type="text"] { min-width: 92px; }
+            .ep-table input[type="number"] { width: 52px; padding: 7px 4px; }
+            .ep-icon-btn { width: 28px; height: 28px; }
+        }
+
         .loading {
             text-align: center;
             padding: 40px 20px;
@@ -538,6 +571,7 @@
             <button class="tab-button active" onclick="switchTab('home')">🏠 Strona Główna</button>
             <button class="tab-button" onclick="switchTab('forecast')">📊 Prognoza Monte Carlo</button>
             <button class="tab-button" onclick="switchTab('advanced'); advOnTabOpen()">🔬 Advanced Forecast</button>
+            <button class="tab-button" onclick="switchTab('epics'); epicsOnTabOpen()">🧩 Prognoza epików</button>
         </div>
         
         <div id="home" class="tab-content active">
@@ -820,6 +854,142 @@
                 <section class="adv-panel adv-note">
                     <strong>Założenia modelu</strong>
                     <ul id="advAssumptions"></ul>
+                </section>
+            </div>
+        </div>
+
+        <div id="epics" class="tab-content adv">
+            <h2>🧩 Prognoza epików</h2>
+            <p class="adv-sub">
+                Sekwencyjna prognoza <span class="adv-tip" tabindex="0" data-tip="Monte Carlo – co najmniej 100 000 przebiegów; w każdym losujemy rozmiary epików i przepustowość kolejnych okresów z historii zespołu.">Monte Carlo</span>
+                dla listy epików. Porównujemy scenariusz „Tempo historyczne” ze scenariuszem „Wyższe tempo od marca” na tych samych losowaniach.
+            </p>
+
+            <section class="adv-panel" aria-labelledby="epParamsTitle">
+                <h3 id="epParamsTitle">Parametry</h3>
+                <div class="adv-controls">
+                    <div class="adv-field">
+                        <label for="epStart">Data rozpoczęcia</label>
+                        <input type="date" id="epStart" value="2026-12-01">
+                        <small>Założenie – można zmienić</small>
+                    </div>
+                    <div class="adv-field">
+                        <label for="epDeadline">Termin docelowy (włącznie)</label>
+                        <input type="date" id="epDeadline" value="2027-05-31">
+                    </div>
+                    <div class="adv-field">
+                        <label for="epPeriod">Okres pomiaru (dni)</label>
+                        <input type="number" id="epPeriod" min="1" max="60" step="1" value="14">
+                    </div>
+                    <div class="adv-field">
+                        <label for="epIterations">Przebiegi na scenariusz</label>
+                        <select id="epIterations">
+                            <option value="100000" selected>100 000</option>
+                            <option value="250000">250 000</option>
+                            <option value="500000">500 000</option>
+                        </select>
+                    </div>
+                    <div class="adv-field wide">
+                        <label for="epThroughput">Historyczna <span class="adv-tip" tabindex="0" data-tip="Throughput – liczba historyjek ukończonych w jednym okresie. W każdym okresie losujemy z powtórzeniami jedną obserwację z tej listy.">przepustowość</span> (historyjki na okres)</label>
+                        <input type="text" id="epThroughput" value="3, 4, 5, 4, 2, 7, 4, 5" autocomplete="off" spellcheck="false">
+                        <small id="epThroughputInfo" aria-live="polite"></small>
+                    </div>
+                    <div class="adv-field wide">
+                        <label for="epAllocation">Udział czasu zespołu na te epiki: <strong id="epAllocationOut">75%</strong></label>
+                        <input type="range" id="epAllocation" min="0" max="100" step="1" value="75">
+                        <label class="ep-toggle"><input type="checkbox" id="epHistoryIncludes"> Historia już uwzględnia pracę w tym przydziale</label>
+                        <small class="ep-note" id="epAllocationNote" aria-live="polite"></small>
+                    </div>
+                    <div class="adv-field">
+                        <label for="epGrowthDate">Wzrost przepustowości od</label>
+                        <input type="date" id="epGrowthDate" value="2027-03-01">
+                    </div>
+                    <div class="adv-field">
+                        <label for="epGrowth">Wzrost: <strong id="epGrowthOut">+15%</strong> <span class="ep-assume" title="Wartość domyślna nie wynika z danych – zweryfikuj ją z zespołem.">założenie do sprawdzenia</span></label>
+                        <input type="range" id="epGrowth" min="0" max="50" step="1" value="15">
+                    </div>
+                    <div class="adv-field">
+                        <label for="epSeed">Ziarno generatora</label>
+                        <input type="number" id="epSeed" min="0" step="1" value="2026">
+                        <small>Te same dane i ziarno = te same wyniki</small>
+                    </div>
+                    <div class="adv-field">
+                        <span style="font-weight:600;font-size:0.88em;">Pojęcia</span>
+                        <div class="adv-glossary">
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="P50 – najwcześniejsza data, do której połowa przebiegów ukończyła zakres.">P50</span>
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="P85 – najwcześniejsza data, do której 85% przebiegów ukończyło zakres. Rekomendowany poziom do planowania.">P85</span>
+                            <span class="adv-chip adv-tip" tabindex="0" data-tip="P95 – najwcześniejsza data, do której 95% przebiegów ukończyło zakres. Termin z buforem.">P95</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="adv-panel" aria-labelledby="epScopeTitle">
+                <h3 id="epScopeTitle">Zakres epików (kolejność realizacji)</h3>
+                <div class="adv-table-wrap">
+                    <table class="ep-table">
+                        <thead><tr><th>#</th><th>Epik</th><th class="num">Minimum</th><th class="num">Maksimum</th><th>Kolejność</th></tr></thead>
+                        <tbody id="epRows"></tbody>
+                    </table>
+                </div>
+                <div class="ep-sum">
+                    <span>Sumaryczny zakres: <strong id="epScopeSum">21–35 historyjek</strong></span>
+                    <button type="button" class="adv-btn small" id="epAddRow">+ Dodaj epik</button>
+                </div>
+            </section>
+
+            <div class="adv-actions">
+                <button type="button" class="adv-btn primary" id="epRunBtn">↻ Uruchom ponownie symulację</button>
+                <button type="button" class="adv-btn" id="epResetBtn">Przywróć dane domyślne</button>
+                <button type="button" class="adv-btn" id="epCsvBtn">⬇ Eksport CSV</button>
+            </div>
+            <p class="adv-status" id="epStatus" aria-live="polite"></p>
+            <div class="adv-error" id="epError" role="alert" hidden></div>
+
+            <div id="epOutput" hidden>
+                <section class="adv-panel" aria-labelledby="epSummaryTitle">
+                    <h3 id="epSummaryTitle">Podsumowanie</h3>
+                    <ul class="adv-answers" id="epSummary"></ul>
+                </section>
+
+                <div class="adv-tiles" id="epTiles"></div>
+
+                <div class="adv-grid2">
+                    <section class="adv-panel"><div id="epScnA"></div></section>
+                    <section class="adv-panel"><div id="epScnB"></div></section>
+                </div>
+
+                <section class="adv-panel">
+                    <div class="adv-chart-head">
+                        <div>
+                            <h3>Prawdopodobieństwo ukończenia wszystkich epików w czasie</h3>
+                            <p class="adv-cap" id="epCdfCap"></p>
+                        </div>
+                        <div class="adv-chart-tools"><button type="button" class="adv-btn small" data-ep-png="cdf">PNG</button></div>
+                    </div>
+                    <div class="adv-chart-box tall"><canvas id="epCdf" role="img" aria-label="Skumulowane prawdopodobieństwo ukończenia wszystkich epików w obu scenariuszach"></canvas></div>
+                </section>
+
+                <section class="adv-panel">
+                    <div class="adv-chart-head">
+                        <div>
+                            <h3 id="epDistTitle">Liczba epików ukończonych do terminu</h3>
+                            <p class="adv-cap">Odsetek przebiegów, w których do terminu docelowego ukończono dokładnie tyle epików.</p>
+                        </div>
+                        <div class="adv-chart-tools"><button type="button" class="adv-btn small" data-ep-png="dist">PNG</button></div>
+                    </div>
+                    <div class="adv-chart-box"><canvas id="epDist" role="img" aria-label="Rozkład liczby epików ukończonych do terminu w obu scenariuszach"></canvas></div>
+                </section>
+
+                <section class="adv-panel">
+                    <h3>Poszczególne epiki</h3>
+                    <div class="adv-table-wrap" id="epEpicTable"></div>
+                    <p class="adv-note" style="margin-top:10px;">Daty P50/P85/P95 to najwcześniejsze końce okresów, do których dany odsetek przebiegów ukończył epik (w modelu sekwencyjnym – razem ze wszystkimi wcześniejszymi).</p>
+                </section>
+
+                <section class="adv-panel adv-note">
+                    <strong>Założenia modelu</strong>
+                    <ul id="epAssumptions"></ul>
                 </section>
             </div>
         </div>
@@ -1995,20 +2165,27 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let v = Math.min(A.items.min, B.items.min); v <= Math.max(A.items.max, B.itemsAll.max); v++) {
             rows.push([v, dec(A.items.share(v) * 100, 3), dec(B.items.share(v) * 100, 3), dec(B.itemsAll.share(v) * 100, 3)]);
         }
+        downloadCsv('monte-carlo-advanced-forecast.csv', rows);
+    }
+
+    function downloadCsv(filename, rows) {
         const cell = (c) => {
             const s = c === undefined || c === null ? '' : String(c);
             return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
         };
         const csv = '\uFEFF' + rows.map((row) => row.map(cell).join(';')).join('\r\n');
         const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-        download('monte-carlo-advanced-forecast.csv', url);
+        download(filename, url);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
-    function exportPng(key) {
-        const chart = charts[key];
+    function chartToPng(chart, filename) {
         if (!chart) return;
-        download('monte-carlo-' + key + '.png', chart.toBase64Image('image/png', 1));
+        download(filename, chart.toBase64Image('image/png', 1));
+    }
+
+    function exportPng(key) {
+        chartToPng(charts[key], 'monte-carlo-' + key + '.png');
     }
 
     // ---------- wiring ----------
@@ -2058,6 +2235,762 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.advOnTabOpen = function () { if (!hasRun) run(); };
     window.AdvancedForecast = { simulate, stats, compute, readInputs, getState: () => state };
+    // Wspólne narzędzia (RNG, daty, formatowanie, wykresy, eksport) dla pozostałych zakładek.
+    window.MC = {
+        DAY_MS, C, hash32, mulberry32, parseDay, toDate, fmtDate, isoDate, fmtAxisDate, fmtN, fmtPct, fmtSigned, plural,
+        annotPlugin, axisStyle, legend, download, downloadCsv, chartToPng
+    };
+})();
+    </script>
+    <script>
+/* Prognoza epików – sekwencyjny Monte Carlo, scenariusze „Tempo historyczne” i „Wyższe tempo”. */
+(function () {
+    'use strict';
+
+    const MC = window.MC;
+    const { C, hash32, mulberry32, parseDay, toDate, fmtDate, isoDate, fmtAxisDate, fmtN, fmtPct, fmtSigned } = MC;
+    const $ = (id) => document.getElementById(id);
+
+    const DEFAULTS = {
+        start: '2026-12-01',
+        deadline: '2027-05-31',
+        period: 14,
+        throughput: '3, 4, 5, 4, 2, 7, 4, 5',
+        allocation: 75,
+        historyIncludes: false,
+        growthDate: '2027-03-01',
+        growth: 15,
+        iterations: 100000,
+        seed: 2026,
+        epics: [['Epik 1', 4, 6], ['Epik 2', 3, 5], ['Epik 3', 3, 4], ['Epik 4', 3, 5], ['Epik 5', 4, 7], ['Epik 6', 4, 8]]
+    };
+    const MIN_ITERATIONS = 100000;
+    const MAX_PERIODS = 1000;       // limit długości przebiegu; niedokończone przebiegi zostają w mianowniku
+    const MAX_DEADLINE_PERIODS = 5000;
+    const MAX_EPICS = 15;
+    const MAX_STORIES = 999;
+    const CHUNK = 10000;
+    const EPS = 1e-9;
+
+    const charts = {};
+    let epics = defaultEpics();
+    let state = null;
+    let hasRun = false;
+    let runToken = 0;
+    let debounceTimer = null;
+
+    function defaultEpics() {
+        return DEFAULTS.epics.map(([name, min, max]) => ({ name, min: String(min), max: String(max) }));
+    }
+
+    const epicsGen = (n) => n + ' ' + (n === 1 ? 'epiku' : 'epików');
+    const storiesGen = (n) => n + ' ' + (n === 1 ? 'historyjki' : 'historyjek');
+    const pct0 = (x) => fmtPct(x, 1);
+
+    // ---------- dane wejściowe ----------
+    function parseThroughput(raw) {
+        const tokens = (raw || '').trim().split(/[\s,;]+/).filter(Boolean);
+        const values = [], bad = [];
+        tokens.forEach((t) => (/^\d+$/.test(t) ? values.push(Number(t)) : bad.push(t)));
+        return { tokens, values, bad };
+    }
+
+    const intIn = (raw, lo, hi) => {
+        if (raw === '' || raw === null) return null;
+        const v = Number(raw);
+        return Number.isInteger(v) && v >= lo && v <= hi ? v : null;
+    };
+
+    function validateEpics() {
+        const errors = [];
+        const parsed = [];
+        const flags = epics.map(() => ({ name: false, min: false, max: false }));
+        if (!epics.length) errors.push('Dodaj co najmniej jeden epik.');
+        if (epics.length > MAX_EPICS) errors.push('Maksymalnie ' + MAX_EPICS + ' epików.');
+        epics.forEach((e, i) => {
+            const label = 'Wiersz ' + (i + 1) + (e.name.trim() ? ' (' + e.name.trim() + ')' : '');
+            const name = e.name.trim();
+            const min = intIn(e.min, 1, MAX_STORIES);
+            const max = intIn(e.max, 1, MAX_STORIES);
+            if (!name) { errors.push(label + ': podaj nazwę epiku.'); flags[i].name = true; }
+            if (min === null) { errors.push(label + ': minimum musi być liczbą całkowitą od 1 do ' + MAX_STORIES + '.'); flags[i].min = true; }
+            if (max === null) { errors.push(label + ': maksimum musi być liczbą całkowitą od 1 do ' + MAX_STORIES + '.'); flags[i].max = true; }
+            if (min !== null && max !== null && min > max) { errors.push(label + ': minimum nie może być większe niż maksimum.'); flags[i].min = flags[i].max = true; }
+            parsed.push({ name: name || 'Epik ' + (i + 1), min, max });
+        });
+        return { errors, parsed, flags };
+    }
+
+    function readInputs() {
+        const errors = [];
+        const startDay = parseDay($('epStart').value);
+        const deadlineDay = parseDay($('epDeadline').value);
+        const growthDay = parseDay($('epGrowthDate').value);
+        if (startDay === null) errors.push('Podaj prawidłową datę rozpoczęcia.');
+        if (deadlineDay === null) errors.push('Podaj prawidłowy termin docelowy.');
+        if (startDay !== null && deadlineDay !== null && deadlineDay < startDay) errors.push('Termin docelowy nie może być wcześniejszy niż data rozpoczęcia.');
+        if (growthDay === null) errors.push('Podaj prawidłową datę wzrostu przepustowości.');
+
+        const period = intIn($('epPeriod').value, 1, 60);
+        if (period === null) errors.push('Okres pomiaru musi być liczbą całkowitą od 1 do 60 dni.');
+
+        const tp = parseThroughput($('epThroughput').value);
+        if (!tp.tokens.length) errors.push('Podaj historyczną przepustowość, np. „3, 4, 5”.');
+        else if (tp.bad.length) errors.push('Nieprawidłowe wartości przepustowości: ' + tp.bad.join(', ') + '. Dozwolone są liczby całkowite ≥ 0.');
+
+        const allocation = intIn($('epAllocation').value, 0, 100);
+        const growth = intIn($('epGrowth').value, 0, 50);
+        if (allocation === null) errors.push('Udział czasu musi wynosić od 0% do 100%.');
+        if (growth === null) errors.push('Wzrost przepustowości musi wynosić od 0% do 50%.');
+        const iterations = Number($('epIterations').value);
+        if (!Number.isInteger(iterations) || iterations < MIN_ITERATIONS) errors.push('Liczba przebiegów musi wynosić co najmniej 100 000.');
+        const seed = intIn($('epSeed').value, 0, 2147483647);
+        if (seed === null) errors.push('Ziarno musi być nieujemną liczbą całkowitą.');
+
+        const ep = validateEpics();
+        errors.push(...ep.errors);
+
+        if (!errors.length && Math.floor((deadlineDay - startDay + 1) / period) > MAX_DEADLINE_PERIODS) {
+            errors.push('Termin docelowy jest zbyt odległy (ponad ' + MAX_DEADLINE_PERIODS + ' okresów).');
+        }
+        if (errors.length) {
+            const err = new Error(errors.join(' '));
+            err.list = errors;
+            throw err;
+        }
+        return {
+            startDay, deadlineDay, growthDay, period, iterations, seed,
+            throughput: tp.values,
+            allocationPct: allocation,
+            historyIncludes: $('epHistoryIncludes').checked,
+            growthPct: growth,
+            epics: ep.parsed
+        };
+    }
+
+    // ---------- model ----------
+    const periodEnd = (p, k) => p.startDay + k * p.period - 1;
+
+    // Mnożnik wzrostu dla okresu k: proporcjonalnie do dni okresu przypadających od daty wzrostu (włącznie).
+    function growthFactor(p, k, growth) {
+        if (!growth) return 1;
+        const ps = p.startDay + (k - 1) * p.period;
+        const pe = ps + p.period - 1;
+        const days = Math.min(p.period, Math.max(0, pe - Math.max(p.growthDay, ps) + 1));
+        return 1 + growth * days / p.period;
+    }
+
+    function prepare(p) {
+        const ctx = {};
+        ctx.E = p.epics.length;
+        ctx.alloc = p.historyIncludes ? 1 : p.allocationPct / 100;
+        ctx.growth = p.growthPct / 100;
+        ctx.D = Math.max(0, Math.floor((p.deadlineDay - p.startDay + 1) / p.period));
+        ctx.zeroCapacity = ctx.alloc === 0 || p.throughput.every((v) => v === 0);
+        ctx.limit = ctx.zeroCapacity ? Math.max(ctx.D, 1) : Math.max(MAX_PERIODS, ctx.D);
+        ctx.factorsB = new Float64Array(ctx.limit + 1);
+        for (let k = 1; k <= ctx.limit; k++) ctx.factorsB[k] = growthFactor(p, k, ctx.growth);
+        ctx.seedSize = hash32(p.seed ^ 0x3A1C55E7);
+        ctx.seedTp = hash32(p.seed ^ 0x7F4A7C15);
+        ctx.minTotal = p.epics.reduce((s, e) => s + e.min, 0);
+        ctx.maxTotal = p.epics.reduce((s, e) => s + e.max, 0);
+        return ctx;
+    }
+
+    function makeBuffers(n, E) {
+        const scenario = () => ({ all: new Uint16Array(n), epic: Array.from({ length: E }, () => new Uint16Array(n)), stories: new Uint16Array(n) });
+        return { n, A: scenario(), B: scenario() };
+    }
+
+    // Oba scenariusze liczone w tej samej pętli: identyczne rozmiary epików i losowania przepustowości
+    // dla odpowiadających sobie przebiegów i okresów. Wartość 0 w buforach okresów = nie ukończono w limicie.
+    function simulateRange(p, ctx, buf, from, to, trace) {
+        const E = ctx.E, tp = p.throughput, nTp = tp.length, alloc = ctx.alloc, fB = ctx.factorsB, limit = ctx.limit, D = ctx.D;
+        const remA = new Int32Array(E), remB = new Int32Array(E);
+        for (let i = from; i < to; i++) {
+            const rs = mulberry32(hash32(ctx.seedSize + i));
+            for (let e = 0; e < E; e++) {
+                const lo = p.epics[e].min, hi = p.epics[e].max;
+                remA[e] = remB[e] = lo + Math.floor(rs() * (hi - lo + 1));
+            }
+            if (trace) trace.sizes = Array.from(remA);
+            const rt = mulberry32(hash32(ctx.seedTp + i));
+            let carryA = 0, carryB = 0, idxA = 0, idxB = 0, delA = 0, delB = 0, recA = -1, recB = -1;
+            for (let t = 1; t <= limit && (idxA < E || idxB < E); t++) {
+                const draw = tp[(rt() * nTp) | 0];
+                const capA = draw * alloc;
+                const capB = capA * fB[t];
+                let wA = 0, wB = 0;
+                if (idxA < E) {
+                    carryA += capA;
+                    wA = Math.floor(carryA + EPS);
+                    carryA = Math.max(0, carryA - wA);
+                    while (wA > 0 && idxA < E) {
+                        const take = wA < remA[idxA] ? wA : remA[idxA];
+                        remA[idxA] -= take; wA -= take; delA += take;
+                        if (remA[idxA] === 0) { buf.A.epic[idxA][i] = t; idxA++; }
+                    }
+                    if (idxA === E) buf.A.all[i] = t;
+                }
+                if (idxB < E) {
+                    carryB += capB;
+                    wB = Math.floor(carryB + EPS);
+                    carryB = Math.max(0, carryB - wB);
+                    while (wB > 0 && idxB < E) {
+                        const take = wB < remB[idxB] ? wB : remB[idxB];
+                        remB[idxB] -= take; wB -= take; delB += take;
+                        if (remB[idxB] === 0) { buf.B.epic[idxB][i] = t; idxB++; }
+                    }
+                    if (idxB === E) buf.B.all[i] = t;
+                }
+                if (t === D) { recA = delA; recB = delB; }
+                if (trace) trace.periods.push({ t, end: isoDate(periodEnd(p, t)), draw, capA, capB, factorB: fB[t], carryA, carryB, delA, delB, remA: Array.from(remA), remB: Array.from(remB) });
+            }
+            // Jeżeli oba scenariusze skończyły przed terminem, do terminu dostarczono cały zakres.
+            buf.A.stories[i] = D === 0 ? 0 : (recA >= 0 ? recA : delA);
+            buf.B.stories[i] = D === 0 ? 0 : (recB >= 0 ? recB : delB);
+        }
+    }
+
+    // ---------- statystyki ----------
+    function periodStats(arr, limit) {
+        const n = arr.length;
+        const counts = new Float64Array(limit + 1);
+        for (let i = 0; i < n; i++) counts[arr[i]]++;
+        const cum = new Float64Array(limit + 1);
+        for (let k = 1; k <= limit; k++) cum[k] = cum[k - 1] + counts[k];
+        const eps = 1e-9 * n;
+        return {
+            n, counts, cum,
+            unfinished: counts[0],
+            cdf: (k) => (k <= 0 ? 0 : cum[Math.min(k, limit)] / n),
+            // najwcześniejszy okres, do którego co najmniej p przebiegów ukończyło zakres; null = nie osiągnięto
+            quantile(q) {
+                for (let k = 1; k <= limit; k++) if (cum[k] >= q * n - eps) return k;
+                return null;
+            },
+            maxFinished() { for (let k = limit; k >= 1; k--) if (counts[k]) return k; return 0; }
+        };
+    }
+
+    function countStats(counts, n) {
+        const eps = 1e-9 * n;
+        return {
+            counts, n,
+            share: (v) => (counts[v] || 0) / n,
+            // największe N, dla którego co najmniej q przebiegów osiągnęło ≥ N
+            atLeast(q) {
+                let c = 0;
+                for (let v = counts.length - 1; v >= 0; v--) { c += counts[v]; if (c >= q * n - eps) return v; }
+                return 0;
+            },
+            mode() { let best = 0; for (let v = 1; v < counts.length; v++) if (counts[v] > counts[best]) best = v; return best; }
+        };
+    }
+
+    function summarize(p, ctx, sc) {
+        const n = sc.all.length, E = ctx.E, D = ctx.D;
+        const all = periodStats(sc.all, ctx.limit);
+        const epicStats = sc.epic.map((arr) => periodStats(arr, ctx.limit));
+        const epicCounts = new Float64Array(E + 1);
+        const storyCounts = new Float64Array(ctx.maxTotal + 1);
+        for (let i = 0; i < n; i++) {
+            let done = 0;
+            for (let e = 0; e < E; e++) { const v = sc.epic[e][i]; if (v >= 1 && v <= D) done++; else break; }
+            epicCounts[done]++;
+            storyCounts[sc.stories[i]]++;
+        }
+        const epicsDone = countStats(epicCounts, n);
+        const stories = countStats(storyCounts, n);
+        const levels = [0.5, 0.85, 0.95];
+        return {
+            all, epicStats, epicsDone, stories,
+            pDeadline: all.cdf(D),
+            dates: levels.map((q) => all.quantile(q)),
+            epicsAt: levels.map((q) => epicsDone.atLeast(q)),
+            storiesAt: levels.map((q) => stories.atLeast(q)),
+            epicDates: epicStats.map((s) => levels.map((q) => s.quantile(q))),
+            epicDeadline: epicStats.map((s) => s.cdf(D))
+        };
+    }
+
+    // ---------- uruchamianie (w porcjach, z możliwością przerwania) ----------
+    function compute(p, onProgress) {
+        const token = ++runToken;
+        const ctx = prepare(p);
+        const buf = makeBuffers(p.iterations, ctx.E);
+        return new Promise((resolve) => {
+            let from = 0;
+            const step = () => {
+                if (token !== runToken) return resolve(null);
+                const to = Math.min(p.iterations, from + CHUNK);
+                simulateRange(p, ctx, buf, from, to, null);
+                from = to;
+                if (onProgress) onProgress(from / p.iterations);
+                if (from < p.iterations) setTimeout(step, 0);
+                else resolve({ p, ctx, A: summarize(p, ctx, buf.A), B: summarize(p, ctx, buf.B) });
+            };
+            setTimeout(step, 0);
+        });
+    }
+
+    function computeSync(p) {
+        const ctx = prepare(p);
+        const buf = makeBuffers(p.iterations, ctx.E);
+        simulateRange(p, ctx, buf, 0, p.iterations, null);
+        return { p, ctx, A: summarize(p, ctx, buf.A), B: summarize(p, ctx, buf.B) };
+    }
+
+    function traceRun(p, i) {
+        const ctx = prepare(p);
+        const buf = makeBuffers(i + 1, ctx.E);
+        const trace = { periods: [] };
+        simulateRange(p, ctx, buf, i, i + 1, trace);
+        trace.allA = buf.A.all[i]; trace.allB = buf.B.all[i];
+        trace.epicA = buf.A.epic.map((a) => a[i]); trace.epicB = buf.B.epic.map((a) => a[i]);
+        trace.storiesA = buf.A.stories[i]; trace.storiesB = buf.B.stories[i];
+        return trace;
+    }
+
+    // ---------- prezentacja ----------
+    function dateOrNa(r, k) {
+        if (k !== null) return fmtDate(periodEnd(r.p, k));
+        return '<span class="ep-na">' + (r.ctx.zeroCapacity ? 'brak prognozy (brak przepustowości)' : 'nie osiągnięto w ' + fmtN(r.ctx.limit) + ' okresach') + '</span>';
+    }
+    const scenarioNameB = (p) => (toDate(p.growthDay).getUTCMonth() === 2 ? 'Wyższe tempo od marca' : 'Wyższe tempo od ' + fmtDate(p.growthDay));
+    const allocationPhrase = (p) => (p.historyIncludes
+        ? 'Przy historii, która już uwzględnia pracę w przydziale ' + p.allocationPct + '% czasu zespołu,'
+        : 'Przy ' + p.allocationPct + '% czasu zespołu');
+
+    function summaryList(r) {
+        const { p, ctx, A, B } = r;
+        const E = ctx.E, dl = fmtDate(p.deadlineDay);
+        const L = [];
+        L.push(allocationPhrase(p) + ' szansa ukończenia wszystkich ' + E + ' epików do ' + dl + ' wynosi <strong>' + pct0(A.pDeadline) + '</strong> bez wzrostu tempa i <strong>' +
+            pct0(B.pDeadline) + '</strong> przy wzroście o ' + p.growthPct + '% od ' + fmtDate(p.growthDay) + '.');
+        if (ctx.zeroCapacity) {
+            L.push('Brak dostępnej przepustowości (' + (ctx.alloc === 0 ? '0% czasu zespołu' : 'historia zawiera same zera') + ') – nie da się wyznaczyć daty ukończenia.');
+            return L;
+        }
+        const a85 = A.dates[1], b85 = B.dates[1];
+        const by = (k) => (k !== null ? 'do ' + fmtDate(periodEnd(p, k)) : '<span class="ep-na">próg nieosiągnięty w limicie ' + fmtN(ctx.limit) + ' okresów</span>');
+        L.push('Z 85% prawdopodobieństwem cały zakres zostanie ukończony: w tempie historycznym ' + by(a85) + ', w scenariuszu „' + scenarioNameB(p) + '” ' + by(b85) +
+            (a85 !== null && b85 !== null ? ' (różnica ' + fmtSigned((b85 - a85) * p.period, 0) + ' dni).' : '.'));
+        L.push('Do ' + dl + ': 85% szans na ukończenie co najmniej <strong>' + epicsGen(A.epicsAt[1]) + '</strong> i dostarczenie co najmniej ' + storiesGen(A.storiesAt[1]) +
+            ' w tempie historycznym; przy wyższym tempie co najmniej ' + epicsGen(B.epicsAt[1]) + ' i ' + storiesGen(B.storiesAt[1]) + '.');
+        const mA = A.epicsDone.mode(), mB = B.epicsDone.mode();
+        L.push('Najbardziej prawdopodobny wynik do terminu: ' + mA + ' z ' + E + ' epików (' + pct0(A.epicsDone.share(mA)) + ' przebiegów) w tempie historycznym i ' +
+            mB + ' z ' + E + ' (' + pct0(B.epicsDone.share(mB)) + ') przy wyższym tempie.');
+        const firstRisky = p.epics.findIndex((e, i) => A.epicDeadline[i] < 0.85);
+        if (firstRisky >= 0) {
+            L.push('Pierwszy epik z szansą poniżej 85% w tempie historycznym to „' + p.epics[firstRisky].name + '” (' + pct0(A.epicDeadline[firstRisky]) + '; przy wyższym tempie ' + pct0(B.epicDeadline[firstRisky]) + ').');
+        }
+        if (A.all.unfinished > 0) {
+            L.push('Uwaga: ' + pct0(A.all.unfinished / A.all.n) + ' przebiegów nie ukończyło zakresu w limicie ' + fmtN(ctx.limit) + ' okresów; pozostają w mianowniku prawdopodobieństw.');
+        }
+        return L;
+    }
+
+    function tilesHTML(r) {
+        const { p, A, B } = r;
+        const dl = fmtDate(p.deadlineDay);
+        const tile = (cls, label, value, note) => '<div class="adv-tile' + cls + '"><div class="adv-tile-label">' + label + '</div><div class="adv-tile-value">' + value + '</div><div class="adv-tile-note">' + note + '</div></div>';
+        const dPp = (B.pDeadline - A.pDeadline) * 100;
+        const a85 = A.dates[1], b85 = B.dates[1];
+        const dDays = a85 !== null && b85 !== null ? (b85 - a85) * p.period : null;
+        return [
+            tile('', 'Tempo historyczne – szansa do ' + dl, pct0(A.pDeadline), 'Ryzyko przekroczenia terminu: <strong>' + pct0(1 - A.pDeadline) + '</strong>'),
+            tile(' b', scenarioNameB(p) + ' – szansa do ' + dl, pct0(B.pDeadline), 'Ryzyko przekroczenia terminu: <strong>' + pct0(1 - B.pDeadline) + '</strong>'),
+            tile(' b', 'Różnica szansy (wyższe − historyczne)', fmtSigned(dPp, 2) + ' pp', 'Wzrost o ' + p.growthPct + '% od ' + fmtDate(p.growthDay)),
+            tile(' b', 'Różnica daty P85 (wyższe − historyczne)', dDays === null ? 'n/d' : fmtSigned(dDays, 0) + ' dni', dDays === null ? 'P85 nieosiągnięte w co najmniej jednym scenariuszu' : 'Ujemna wartość = wcześniejsze ukończenie')
+        ].join('');
+    }
+
+    function scenarioHTML(r, key) {
+        const { p, ctx } = r;
+        const S = r[key];
+        const name = key === 'A' ? 'Tempo historyczne' : scenarioNameB(p);
+        const desc = key === 'A' ? '0% wzrostu przepustowości' : '+' + p.growthPct + '% od ' + fmtDate(p.growthDay);
+        const color = key === 'A' ? C.a : C.b;
+        const lv = ['50%', '85%', '95%'];
+        let html = '<div class="adv-scn-label"><span class="adv-dot" style="background:' + color + '"></span>' + name + ' <span class="adv-note">(' + desc + ')</span></div>';
+        html += '<p class="adv-note" style="margin-bottom:10px;">Szansa ukończenia wszystkich ' + ctx.E + ' epików do ' + fmtDate(p.deadlineDay) + ': <strong>' + pct0(S.pDeadline) +
+            '</strong> · ryzyko przekroczenia: <strong>' + pct0(1 - S.pDeadline) + '</strong></p>';
+        html += '<div class="adv-table-wrap"><table class="ep-scn-table"><thead><tr><th>Poziom</th><th>Ukończenie całości</th><th class="num">Epiki do terminu</th><th class="num">Historyjki do terminu</th></tr></thead><tbody>' +
+            lv.map((l, i) => '<tr><td>' + l + '</td><td>' + dateOrNa(r, S.dates[i]) + '</td><td class="num">≥ ' + S.epicsAt[i] + ' z ' + ctx.E + '</td><td class="num">≥ ' + S.storiesAt[i] + '</td></tr>').join('') +
+            '</tbody></table></div>';
+        html += '<ul class="ep-labels">' + lv.map((l, i) => '<li>' + l + ' szans na ukończenie co najmniej ' + epicsGen(S.epicsAt[i]) + ' i dostarczenie co najmniej ' + storiesGen(S.storiesAt[i]) + '</li>').join('') + '</ul>';
+        html += '<p class="adv-note" style="margin-top:8px;">Historyjki obejmują także epiki w toku. Zakres w przebiegu: ' + r.ctx.minTotal + '–' + r.ctx.maxTotal + ' historyjek.</p>';
+        return html;
+    }
+
+    const DTF_SHORT = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+
+    function epicTableHTML(r) {
+        const { p } = r;
+        const d = (S, e, i) => {
+            const k = S.epicDates[e][i];
+            return k === null ? dateOrNa(r, k) : DTF_SHORT.format(toDate(periodEnd(p, k)));
+        };
+        const deltaPp = (x) => '<span class="' + (x > 1e-9 ? 'adv-delta-down' : '') + '">' + fmtSigned(x, 1) + ' pp</span>';
+        return '<table><thead><tr><th>#</th><th>Epik</th><th class="num">Min–max</th>' +
+            '<th>Historyczne P50</th><th>P85</th><th>P95</th><th class="num">Szansa do terminu</th>' +
+            '<th>Wyższe P50</th><th>P85</th><th>P95</th><th class="num">Szansa do terminu</th><th class="num">Różnica</th></tr></thead><tbody>' +
+            p.epics.map((e, i) => '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(e.name) + '</td><td class="num">' + e.min + '–' + e.max + '</td>' +
+                '<td>' + d(r.A, i, 0) + '</td><td>' + d(r.A, i, 1) + '</td><td>' + d(r.A, i, 2) + '</td><td class="num">' + pct0(r.A.epicDeadline[i]) + '</td>' +
+                '<td>' + d(r.B, i, 0) + '</td><td>' + d(r.B, i, 1) + '</td><td>' + d(r.B, i, 2) + '</td><td class="num">' + pct0(r.B.epicDeadline[i]) + '</td>' +
+                '<td class="num">' + deltaPp((r.B.epicDeadline[i] - r.A.epicDeadline[i]) * 100) + '</td></tr>').join('') +
+            '</tbody></table>';
+    }
+
+    function assumptionsHTML(r) {
+        const { p, ctx } = r;
+        return [
+            fmtN(p.iterations) + ' przebiegów na scenariusz. W każdym przebiegu rozmiar każdego epiku to jedna liczba całkowita wylosowana jednostajnie z przedziału min–max (włącznie) i stała w całym przebiegu.',
+            'W każdym okresie losujemy z powtórzeniami jedną obserwację z ' + p.throughput.length + ' historycznych (' + p.throughput.join(', ') + '). ' +
+                (p.historyIncludes ? 'Historia już uwzględnia przydział zespołu, więc nie mnożymy jej przez udział czasu.' : 'Historia opisuje pracę całego zespołu; mnożymy ją przez ' + p.allocationPct + '% udziału czasu.'),
+            'Okres ma ' + p.period + ' dni; pierwszy obejmuje ' + fmtDate(p.startDay) + ' i kolejne ' + (p.period - 1) + ' dni (koniec: ' + fmtDate(periodEnd(p, 1)) + '). Ukończenia raportujemy na koniec okresu. Do ' +
+                fmtDate(p.deadlineDay) + ' mieści się ' + ctx.D + ' pełnych okresów' + (ctx.D > 0 ? ' (ostatni kończy się ' + fmtDate(periodEnd(p, ctx.D)) + ').' : '.'),
+            'Ułamkowa część przepustowości przechodzi na kolejny okres; raportujemy tylko pełne historyjki. Model jest sekwencyjny: przepustowość trafia do pierwszego niedokończonego epiku, a nadwyżka po jego zamknięciu – do następnego (w jednym okresie może zakończyć się kilka epików).',
+            '„' + scenarioNameB(p) + '”: od ' + fmtDate(p.growthDay) + ' przepustowość rośnie o ' + p.growthPct + '% (założenie do sprawdzenia). Okres, w którego środku wypada ta data, dostaje wzrost proporcjonalny do liczby dni od daty wzrostu włącznie.',
+            'Zespół zna domenę Epików 1–2, a zrozumienie Epików 3–6 ma się poprawić. Bez danych liczbowych nie korygujemy wielkości ani tempa poszczególnych epików – zaktualizuj przedziały min–max po doprecyzowaniu zakresu. W scenariuszu z poprawą wpływ lepszej znajomości domeny jest już ujęty we wzroście przepustowości.',
+            'Oba scenariusze korzystają z tych samych losowań rozmiarów i przepustowości (ziarno ' + p.seed + '), więc różnice wynikają wyłącznie ze wzrostu tempa. Przebiegi niedokończone w limicie ' + fmtN(ctx.limit) + ' okresów pozostają w mianowniku.'
+        ].map((t) => '<li>' + t + '</li>').join('');
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // ---------- wykresy ----------
+    function makeChart(key, canvasId, config) {
+        if (charts[key]) charts[key].destroy();
+        config.plugins = [MC.annotPlugin];
+        config.options = Object.assign({ responsive: true, maintainAspectRatio: false, animation: { duration: 300 } }, config.options);
+        charts[key] = new Chart($(canvasId), config);
+    }
+
+    function renderCdf(r) {
+        const { p, ctx, A, B } = r;
+        const reach = [A.dates[2], B.dates[2]].filter((k) => k !== null);
+        let hi = Math.max(ctx.D + 1, reach.length ? Math.max(...reach) + 2 : Math.max(A.all.maxFinished(), B.all.maxFinished()) + 1, 4);
+        hi = Math.min(hi, ctx.limit);
+        const year = toDate(p.startDay).getUTCFullYear();
+        const labels = [], dA = [], dB = [];
+        for (let k = 1; k <= hi; k++) {
+            labels.push(fmtAxisDate(periodEnd(p, k), year));
+            dA.push(+(A.all.cdf(k) * 100).toFixed(2));
+            dB.push(+(B.all.cdf(k) * 100).toFixed(2));
+        }
+        // pozycja terminu na osi kategorii: indeks 0 = koniec 1. okresu
+        const deadlineX = (p.deadlineDay - periodEnd(p, 1)) / p.period;
+        makeChart('cdf', 'epCdf', {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Tempo historyczne', data: dA, borderColor: C.a, backgroundColor: C.aFill, fill: true, borderWidth: 2.5, pointRadius: 2.5, tension: 0.2 },
+                    { label: scenarioNameB(p) + ' (+' + p.growthPct + '%)', data: dB, borderColor: C.b, backgroundColor: C.bFill, fill: true, borderWidth: 2.5, borderDash: [6, 3], pointRadius: 2.5, tension: 0.2 }
+                ]
+            },
+            options: {
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: MC.axisStyle({ min: 0, max: 100, ticks: { color: C.ink, callback: (v) => v + '%' }, title: { display: true, text: 'Szansa ukończenia wszystkich epików', color: C.ink } }),
+                    x: MC.axisStyle({ ticks: { color: C.ink, maxRotation: 0, autoSkip: true, autoSkipPadding: 10 }, title: { display: true, text: 'Koniec okresu', color: C.ink } })
+                },
+                plugins: {
+                    legend: MC.legend,
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => 'Okres ' + (items[0].dataIndex + 1) + ' – koniec ' + fmtDate(periodEnd(p, items[0].dataIndex + 1)),
+                            label: (it) => it.dataset.label + ': ' + fmtN(it.parsed.y, 1) + '% szans'
+                        }
+                    },
+                    advAnnot: {
+                        vlines: deadlineX >= 0 && deadlineX <= hi - 1 ? [{ value: deadlineX, label: 'Termin: ' + fmtDate(p.deadlineDay), color: '#b7791f' }] : [],
+                        hlines: [{ value: 50, label: '50%', color: C.p50 }, { value: 85, label: '85%', color: C.p85 }, { value: 95, label: '95%', color: C.p95 }]
+                    }
+                }
+            }
+        });
+        $('epCdfCap').textContent = 'Linia pionowa: termin docelowy (' + fmtDate(p.deadlineDay) + '). Linie poziome: 50%, 85% i 95%. Ukończenia raportowane są na koniec ' + p.period + '-dniowych okresów.';
+    }
+
+    function renderDist(r) {
+        const { p, ctx, A, B } = r;
+        const labels = [], dA = [], dB = [];
+        for (let v = 0; v <= ctx.E; v++) {
+            labels.push(String(v));
+            dA.push(+(A.epicsDone.share(v) * 100).toFixed(2));
+            dB.push(+(B.epicsDone.share(v) * 100).toFixed(2));
+        }
+        makeChart('dist', 'epDist', {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Tempo historyczne', data: dA, backgroundColor: C.a + 'cc', borderRadius: 5 },
+                    { label: scenarioNameB(p), data: dB, backgroundColor: C.b + 'cc', borderRadius: 5 }
+                ]
+            },
+            options: {
+                scales: {
+                    y: MC.axisStyle({ beginAtZero: true, ticks: { color: C.ink, callback: (v) => v + '%' }, title: { display: true, text: 'Odsetek przebiegów', color: C.ink } }),
+                    x: MC.axisStyle({ grid: { display: false }, title: { display: true, text: 'Epiki ukończone do ' + fmtDate(p.deadlineDay) + ' (z ' + ctx.E + ')', color: C.ink } })
+                },
+                plugins: {
+                    legend: MC.legend,
+                    tooltip: { callbacks: { title: (items) => items[0].label + ' z ' + ctx.E + ' epików', label: (it) => it.dataset.label + ': ' + fmtN(it.parsed.y, 1) + '% przebiegów' } }
+                }
+            }
+        });
+        $('epDistTitle').textContent = 'Liczba epików ukończonych do ' + fmtDate(p.deadlineDay);
+    }
+
+    function render(r) {
+        $('epOutput').hidden = false;
+        $('epSummary').innerHTML = summaryList(r).map((t) => '<li>✅ ' + t + '</li>').join('');
+        $('epTiles').innerHTML = tilesHTML(r);
+        $('epScnA').innerHTML = scenarioHTML(r, 'A');
+        $('epScnB').innerHTML = scenarioHTML(r, 'B');
+        $('epEpicTable').innerHTML = epicTableHTML(r);
+        $('epAssumptions').innerHTML = assumptionsHTML(r);
+        if (typeof Chart === 'undefined') {
+            $('epStatus').textContent = 'Nie udało się załadować biblioteki wykresów (Chart.js). Tabele i podsumowanie są dostępne.';
+            return;
+        }
+        renderCdf(r);
+        renderDist(r);
+    }
+
+    // ---------- tabela zakresu ----------
+    function renderRows(focus) {
+        const tbody = $('epRows');
+        tbody.innerHTML = epics.map((e, i) =>
+            '<tr data-idx="' + i + '">' +
+            '<td class="ep-order">' + (i + 1) + '</td>' +
+            '<td><input type="text" data-field="name" aria-label="Nazwa epiku ' + (i + 1) + '" value="' + escapeHtml(e.name) + '"></td>' +
+            '<td class="num"><input type="number" data-field="min" min="1" max="' + MAX_STORIES + '" step="1" aria-label="Minimum historyjek, wiersz ' + (i + 1) + '" value="' + escapeHtml(e.min) + '"></td>' +
+            '<td class="num"><input type="number" data-field="max" min="1" max="' + MAX_STORIES + '" step="1" aria-label="Maksimum historyjek, wiersz ' + (i + 1) + '" value="' + escapeHtml(e.max) + '"></td>' +
+            '<td><div class="ep-actions">' +
+            '<button type="button" class="ep-icon-btn" data-act="up" aria-label="Przesuń wyżej: wiersz ' + (i + 1) + '"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+            '<button type="button" class="ep-icon-btn" data-act="down" aria-label="Przesuń niżej: wiersz ' + (i + 1) + '"' + (i === epics.length - 1 ? ' disabled' : '') + '>↓</button>' +
+            '<button type="button" class="ep-icon-btn" data-act="del" aria-label="Usuń wiersz ' + (i + 1) + '"' + (epics.length === 1 ? ' disabled' : '') + '>✕</button>' +
+            '</div></td></tr>').join('');
+        $('epAddRow').disabled = epics.length >= MAX_EPICS;
+        updateScopeSum();
+        if (focus) {
+            const btn = tbody.querySelector('tr[data-idx="' + focus.idx + '"] [data-act="' + focus.act + '"]');
+            (btn && !btn.disabled ? btn : tbody.querySelector('tr[data-idx="' + focus.idx + '"] input')).focus();
+        }
+    }
+
+    function updateScopeSum() {
+        const v = validateEpics();
+        document.querySelectorAll('#epRows tr').forEach((tr, i) => {
+            ['name', 'min', 'max'].forEach((f) => tr.querySelector('[data-field="' + f + '"]').setAttribute('aria-invalid', String(!!(v.flags[i] && v.flags[i][f]))));
+        });
+        const ok = !v.errors.length;
+        const lo = ok ? v.parsed.reduce((s, e) => s + e.min, 0) : null;
+        const hi = ok ? v.parsed.reduce((s, e) => s + e.max, 0) : null;
+        $('epScopeSum').textContent = ok ? lo + '–' + hi + ' historyjek (' + epics.length + ' ' + (epics.length === 1 ? 'epik' : epics.length < 5 ? 'epiki' : 'epików') + ')' : 'popraw dane w tabeli';
+    }
+
+    // ---------- sterowanie ----------
+    function showError(list) {
+        const box = $('epError');
+        box.innerHTML = '';
+        const strong = document.createElement('strong');
+        strong.textContent = 'Popraw dane wejściowe:';
+        box.appendChild(strong);
+        const ul = document.createElement('ul');
+        ul.style.margin = '6px 0 0 18px';
+        list.forEach((m) => { const li = document.createElement('li'); li.textContent = m; ul.appendChild(li); });
+        box.appendChild(ul);
+        box.hidden = false;
+        $('epOutput').hidden = true;
+        $('epStatus').textContent = '';
+        state = null;
+    }
+
+    function run() {
+        clearTimeout(debounceTimer);
+        let p;
+        try {
+            p = readInputs();
+        } catch (e) {
+            runToken++;
+            showError(e.list || [e.message]);
+            return;
+        }
+        $('epError').hidden = true;
+        const btn = $('epRunBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Trwa symulacja…';
+        const t0 = performance.now();
+        compute(p, (f) => { $('epStatus').textContent = 'Symulacja: ' + Math.round(f * 100) + '% (' + fmtN(p.iterations) + ' przebiegów × 2 scenariusze)…'; })
+            .then((r) => {
+                if (!r) return;
+                r.ms = performance.now() - t0;
+                state = r;
+                hasRun = true;
+                render(r);
+                $('epStatus').textContent = 'Gotowe: ' + fmtN(p.iterations) + ' przebiegów × 2 scenariusze · ziarno ' + p.seed + ' · ' + fmtN(r.ms) + ' ms. Zmiana ustawień przelicza wyniki automatycznie.';
+                btn.disabled = false;
+                btn.textContent = '↻ Uruchom ponownie symulację';
+            })
+            .catch((e) => {
+                showError([e.message]);
+                btn.disabled = false;
+                btn.textContent = '↻ Uruchom ponownie symulację';
+            });
+    }
+
+    function scheduleRun() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(run, 300);
+    }
+
+    function exportCsv() {
+        if (!state) { $('epStatus').textContent = 'Najpierw uruchom symulację.'; return; }
+        const { p, ctx, A, B } = state;
+        const dec = (x, d = 2) => Number(x).toFixed(d).replace('.', ',');
+        const iso = (k) => (k === null ? 'nie osiągnięto' : isoDate(periodEnd(p, k)));
+        const rows = [];
+        rows.push(['Monte Carlo 2026 – Prognoza epików']);
+        rows.push(['Parametr', 'Wartość']);
+        rows.push(['Data rozpoczęcia', isoDate(p.startDay)]);
+        rows.push(['Termin docelowy', isoDate(p.deadlineDay)]);
+        rows.push(['Okres pomiaru (dni)', p.period]);
+        rows.push(['Pełne okresy do terminu', ctx.D]);
+        rows.push(['Historyczna przepustowość', p.throughput.join(' ')]);
+        rows.push(['Udział czasu zespołu (%)', p.allocationPct]);
+        rows.push(['Historia już uwzględnia przydział', p.historyIncludes ? 'tak' : 'nie']);
+        rows.push(['Data wzrostu przepustowości', isoDate(p.growthDay)]);
+        rows.push(['Wzrost przepustowości (%)', p.growthPct]);
+        rows.push(['Przebiegi na scenariusz', p.iterations]);
+        rows.push(['Ziarno', p.seed]);
+        rows.push(['Limit długości przebiegu (okresy)', ctx.limit]);
+        rows.push([]);
+        rows.push(['Epik', 'Kolejność', 'Minimum', 'Maksimum']);
+        p.epics.forEach((e, i) => rows.push([e.name, i + 1, e.min, e.max]));
+        rows.push(['Suma', '', ctx.minTotal, ctx.maxTotal]);
+        rows.push([]);
+        rows.push(['Wynik', 'Tempo historyczne', scenarioNameB(p), 'Różnica']);
+        rows.push(['Szansa ukończenia wszystkich epików do terminu (%)', dec(A.pDeadline * 100, 2), dec(B.pDeadline * 100, 2), dec((B.pDeadline - A.pDeadline) * 100, 2) + ' pp']);
+        rows.push(['Ryzyko przekroczenia terminu (%)', dec((1 - A.pDeadline) * 100, 2), dec((1 - B.pDeadline) * 100, 2), '']);
+        ['P50', 'P85', 'P95'].forEach((l, i) => {
+            const diff = A.dates[i] !== null && B.dates[i] !== null ? (B.dates[i] - A.dates[i]) * p.period + ' dni' : 'n/d';
+            rows.push(['Ukończenie całości ' + l, iso(A.dates[i]), iso(B.dates[i]), diff]);
+        });
+        ['50%', '85%', '95%'].forEach((l, i) => rows.push(['Epiki do terminu – co najmniej (' + l + ')', A.epicsAt[i], B.epicsAt[i], B.epicsAt[i] - A.epicsAt[i]]));
+        ['50%', '85%', '95%'].forEach((l, i) => rows.push(['Historyjki do terminu – co najmniej (' + l + ')', A.storiesAt[i], B.storiesAt[i], B.storiesAt[i] - A.storiesAt[i]]));
+        rows.push(['Przebiegi niedokończone w limicie (%)', dec(A.all.unfinished / A.all.n * 100, 3), dec(B.all.unfinished / B.all.n * 100, 3), '']);
+        rows.push([]);
+        rows.push(['Epik', 'Historyczne P50', 'Historyczne P85', 'Historyczne P95', 'Historyczne szansa do terminu (%)', 'Wyższe P50', 'Wyższe P85', 'Wyższe P95', 'Wyższe szansa do terminu (%)']);
+        p.epics.forEach((e, i) => rows.push([e.name, iso(A.epicDates[i][0]), iso(A.epicDates[i][1]), iso(A.epicDates[i][2]), dec(A.epicDeadline[i] * 100, 2),
+            iso(B.epicDates[i][0]), iso(B.epicDates[i][1]), iso(B.epicDates[i][2]), dec(B.epicDeadline[i] * 100, 2)]));
+        rows.push([]);
+        rows.push(['Epiki ukończone do terminu', 'Tempo historyczne (%)', scenarioNameB(p) + ' (%)']);
+        for (let v = 0; v <= ctx.E; v++) rows.push([v, dec(A.epicsDone.share(v) * 100, 3), dec(B.epicsDone.share(v) * 100, 3)]);
+        rows.push([]);
+        rows.push(['Okres', 'Koniec okresu', 'Tempo historyczne – skumulowane (%)', scenarioNameB(p) + ' – skumulowane (%)', 'Mnożnik wzrostu']);
+        const last = Math.min(ctx.limit, Math.max(ctx.D, A.all.maxFinished(), B.all.maxFinished()));
+        for (let k = 1; k <= last; k++) rows.push([k, isoDate(periodEnd(p, k)), dec(A.all.cdf(k) * 100, 3), dec(B.all.cdf(k) * 100, 3), dec(ctx.factorsB[k], 4)]);
+        MC.downloadCsv('monte-carlo-prognoza-epikow.csv', rows);
+    }
+
+    function updateAllocationUi() {
+        const pctV = $('epAllocation').value;
+        const includes = $('epHistoryIncludes').checked;
+        $('epAllocationOut').textContent = pctV + '%';
+        $('epAllocation').disabled = includes;
+        const note = $('epAllocationNote');
+        note.classList.toggle('on', includes);
+        note.textContent = includes
+            ? 'Przydział nie jest stosowany – historia już odzwierciedla pracę w tym przydziale (mnożnik 1,0).'
+            : (Number(pctV) === 0 ? 'Brak czasu na epiki – brak przepustowości i prognozowanej daty.' : 'Dostępna przepustowość = historia × ' + pctV + '%.');
+    }
+    function updateGrowthUi() { $('epGrowthOut').textContent = '+' + $('epGrowth').value + '%'; }
+    function updateThroughputInfo() {
+        const tp = parseThroughput($('epThroughput').value);
+        const info = $('epThroughputInfo');
+        if (!tp.tokens.length || tp.bad.length) { info.textContent = tp.bad.length ? 'Nieprawidłowe: ' + tp.bad.join(', ') : 'Brak danych'; return; }
+        const n = tp.values.length;
+        const mean = tp.values.reduce((s, v) => s + v, 0) / n;
+        info.textContent = n + ' ' + (n === 1 ? 'okres' : n < 5 ? 'okresy' : 'okresów') + ' · średnio ' + fmtN(mean, 2) + ' · zakres ' + Math.min(...tp.values) + '–' + Math.max(...tp.values) +
+            (tp.values.every((v) => v === 0) ? ' · same zera = brak przepustowości' : '');
+    }
+
+    function resetDefaults() {
+        $('epStart').value = DEFAULTS.start;
+        $('epDeadline').value = DEFAULTS.deadline;
+        $('epPeriod').value = DEFAULTS.period;
+        $('epThroughput').value = DEFAULTS.throughput;
+        $('epAllocation').value = DEFAULTS.allocation;
+        $('epHistoryIncludes').checked = DEFAULTS.historyIncludes;
+        $('epGrowthDate').value = DEFAULTS.growthDate;
+        $('epGrowth').value = DEFAULTS.growth;
+        $('epIterations').value = String(DEFAULTS.iterations);
+        $('epSeed').value = DEFAULTS.seed;
+        epics = defaultEpics();
+        renderRows();
+        updateAllocationUi();
+        updateGrowthUi();
+        updateThroughputInfo();
+        run();
+    }
+
+    // zdarzenia
+    $('epAllocation').addEventListener('input', () => { updateAllocationUi(); scheduleRun(); });
+    $('epHistoryIncludes').addEventListener('change', () => { updateAllocationUi(); scheduleRun(); });
+    $('epGrowth').addEventListener('input', () => { updateGrowthUi(); scheduleRun(); });
+    $('epThroughput').addEventListener('input', () => { updateThroughputInfo(); scheduleRun(); });
+    ['epStart', 'epDeadline', 'epPeriod', 'epGrowthDate', 'epIterations', 'epSeed'].forEach((id) => $(id).addEventListener('change', scheduleRun));
+    $('epRows').addEventListener('input', (ev) => {
+        const field = ev.target.dataset.field;
+        const tr = ev.target.closest('tr');
+        if (!field || !tr) return;
+        epics[Number(tr.dataset.idx)][field] = ev.target.value;
+        updateScopeSum();
+        scheduleRun();
+    });
+    $('epRows').addEventListener('click', (ev) => {
+        const btn = ev.target.closest('[data-act]');
+        if (!btn) return;
+        const i = Number(btn.closest('tr').dataset.idx);
+        const act = btn.dataset.act;
+        if (act === 'up' && i > 0) { [epics[i - 1], epics[i]] = [epics[i], epics[i - 1]]; renderRows({ idx: i - 1, act }); }
+        else if (act === 'down' && i < epics.length - 1) { [epics[i + 1], epics[i]] = [epics[i], epics[i + 1]]; renderRows({ idx: i + 1, act }); }
+        else if (act === 'del' && epics.length > 1) { epics.splice(i, 1); renderRows({ idx: Math.min(i, epics.length - 1), act: 'del' }); }
+        else return;
+        scheduleRun();
+    });
+    $('epAddRow').addEventListener('click', () => {
+        if (epics.length >= MAX_EPICS) return;
+        epics.push({ name: 'Epik ' + (epics.length + 1), min: '3', max: '5' });
+        renderRows();
+        $('epRows').lastElementChild.querySelector('input').focus();
+        scheduleRun();
+    });
+    $('epRunBtn').addEventListener('click', run);
+    $('epResetBtn').addEventListener('click', resetDefaults);
+    $('epCsvBtn').addEventListener('click', exportCsv);
+    document.querySelectorAll('#epics [data-ep-png]').forEach((b) => b.addEventListener('click', () => {
+        MC.chartToPng(charts[b.dataset.epPng], 'monte-carlo-epiki-' + b.dataset.epPng + '.png');
+    }));
+
+    renderRows();
+    updateAllocationUi();
+    updateGrowthUi();
+    updateThroughputInfo();
+
+    window.epicsOnTabOpen = function () { if (!hasRun) run(); };
+    window.EpicForecast = {
+        readInputs, prepare, computeSync, traceRun, growthFactor, getState: () => state,
+        simulateBuffers(p) { const ctx = prepare(p); const buf = makeBuffers(p.iterations, ctx.E); simulateRange(p, ctx, buf, 0, p.iterations, null); return { ctx, buf }; }
+    };
 })();
     </script>
 </body>
