@@ -308,6 +308,43 @@
                 gap: 10px;
             }
         }
+
+        #advancedResults .results {
+            margin-top: 20px;
+        }
+
+        #advancedResults table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #advancedResults table th {
+            background: #f0f0f0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        #advancedResults table td {
+            vertical-align: middle;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -320,6 +357,7 @@
         <div class="tabs">
             <button class="tab-button active" onclick="switchTab('home')">🏠 Strona Główna</button>
             <button class="tab-button" onclick="switchTab('forecast')">📊 Prognoza Monte Carlo</button>
+            <button class="tab-button" onclick="switchTab('advanced')">🔬 Advanced Forecast</button>
         </div>
         
         <div id="home" class="tab-content active">
@@ -409,6 +447,39 @@
             </div>
             
             <div id="simulationResults"></div>
+        </div>
+
+        <div id="advanced" class="tab-content">
+            <h2>🔬 Advanced Forecast (100k Simulations)</h2>
+            
+            <h3>Simulation Parameters</h3>
+            
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="advBacklog">Backlog Size:</label>
+                    <input type="number" id="advBacklog" value="62" min="1">
+                </div>
+                <div class="input-field">
+                    <label for="advVelocity">Historical Throughput:</label>
+                    <textarea id="advVelocity" placeholder="5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6">5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6</textarea>
+                </div>
+                <div class="input-field">
+                    <label for="advSprintLength">Sprint Length (days):</label>
+                    <input type="number" id="advSprintLength" value="14" min="1">
+                </div>
+                <div class="input-field">
+                    <label for="advSimulations">Number of Simulations:</label>
+                    <input type="number" id="advSimulations" value="100000" min="10000" step="10000">
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="button button-primary" onclick="runAdvancedSimulation()">🚀 Run Simulation</button>
+                <button class="button button-secondary" onclick="resetAdvancedDefaults()">↺ Reset Defaults</button>
+                <button class="button button-secondary" onclick="exportAdvancedResults()">💾 Export CSV</button>
+            </div>
+            
+            <div id="advancedResults"></div>
         </div>
     </div>
     
@@ -726,6 +797,276 @@ function resetDefaults() {
     document.getElementById('backlogGrowth').value = '0';
     updateGrowthInfo();
     document.getElementById('simulationResults').innerHTML = '';
+}
+
+function runAdvancedSimulation() {
+    const backlog = parseInt(document.getElementById('advBacklog').value) || 62;
+    const velocityStr = document.getElementById('advVelocity').value;
+    const numSims = parseInt(document.getElementById('advSimulations').value) || 100000;
+    const sprintLength = parseInt(document.getElementById('advSprintLength').value) || 14;
+    const velocity = parseVelocity(velocityStr);
+
+    if (!velocity || velocity.length === 0) {
+        document.getElementById('advancedResults').innerHTML = '<div class="error">❌ Invalid throughput data</div>';
+        return;
+    }
+
+    document.getElementById('advancedResults').innerHTML = '<div class="loading">⏳ Running ' + numSims.toLocaleString() + ' simulations...</div>';
+
+    setTimeout(() => {
+        try {
+            const results = performAdvancedSimulations(backlog, velocity, numSims, sprintLength);
+            displayAdvancedResults(results);
+        } catch (error) {
+            document.getElementById('advancedResults').innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+        }
+    }, 100);
+}
+
+function performAdvancedSimulations(backlog, velocity, numSims, sprintLength) {
+    const startDate = new Date('2027-01-04T00:00:00');
+    const march31 = new Date('2027-03-31T00:00:00');
+    const feb28 = new Date('2027-02-28T00:00:00');
+    const apr30 = new Date('2027-04-30T00:00:00');
+    const may31 = new Date('2027-05-31T00:00:00');
+
+    const scenarioA = runScenarioSim(backlog, velocity, numSims, sprintLength, 0, startDate, [march31, feb28, apr30, may31]);
+    const scenarioB = runScenarioSim(backlog, velocity, numSims, sprintLength, null, startDate, [march31, feb28, apr30, may31]);
+
+    return { scenarioA, scenarioB, startDate, march31, feb28, apr30, may31 };
+}
+
+function runScenarioSim(baseBacklog, velocity, numSims, sprintLength, growthPercent, startDate, checkDates) {
+    const completionDates = [];
+    const itemsByMarch31 = [];
+    const dateProbs = {};
+    let baselineBacklog = baseBacklog;
+
+    for (let sim = 0; sim < numSims; sim++) {
+        const rng = new SeededRandom(sim);
+        const growth = growthPercent === null ? 20 + rng.next() * 10 : growthPercent;
+        const totalBacklog = baseBacklog + Math.round(baseBacklog * growth / 100);
+        
+        let completed = 0, sprint = 0, completionDate = null;
+        while (completed < totalBacklog && sprint < 100) {
+            const idx = Math.floor(rng.next() * velocity.length);
+            completed += velocity[idx];
+            sprint++;
+            const sprintEnd = addDays(startDate, sprint * sprintLength - 1);
+            if (completed >= totalBacklog) {
+                completionDate = sprintEnd;
+                break;
+            }
+        }
+
+        if (completionDate) completionDates.push(completionDate);
+
+        let itemsCount = 0, sprint2 = 0;
+        const rng2 = new SeededRandom(sim + 1000);
+        while (true) {
+            const sprintEnd = addDays(startDate, (sprint2 + 1) * sprintLength - 1);
+            if (sprintEnd > checkDates[0]) break;
+            const idx = Math.floor(rng2.next() * velocity.length);
+            itemsCount += velocity[idx];
+            sprint2++;
+        }
+        itemsByMarch31.push(Math.min(itemsCount, totalBacklog));
+
+        checkDates.forEach(date => {
+            const key = date.toISOString().split('T')[0];
+            if (completionDate && completionDate <= date) {
+                dateProbs[key] = (dateProbs[key] || 0) + 1;
+            }
+        });
+    }
+
+    completionDates.sort((a, b) => a - b);
+    itemsByMarch31.sort((a, b) => a - b);
+
+    return { completionDates, itemsByMarch31, dateProbs, baseBacklog, numSims };
+}
+
+function displayAdvancedResults(data) {
+    const html = generateAdvancedResultsHTML(data);
+    document.getElementById('advancedResults').innerHTML = html;
+    setTimeout(() => {
+        renderComparisonChart(data);
+        renderCompletionHistogram(data);
+        renderCDFChart(data);
+    }, 300);
+}
+
+function generateAdvancedResultsHTML(data) {
+    const a = data.scenarioA;
+    const b = data.scenarioB;
+
+    const getStats = (arr) => {
+        const sorted = arr.slice().sort((x, y) => x - y);
+        return {
+            p50: sorted[Math.floor(sorted.length * 0.5)],
+            p85: sorted[Math.floor(sorted.length * 0.85)],
+            p95: sorted[Math.floor(sorted.length * 0.95)]
+        };
+    };
+
+    const getDateStats = (dates) => {
+        const stats = getStats(dates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24)));
+        return {
+            p50: addDays(data.startDate, Math.round(stats.p50)),
+            p85: addDays(data.startDate, Math.round(stats.p85)),
+            p95: addDays(data.startDate, Math.round(stats.p95))
+        };
+    };
+
+    const aDateStats = getDateStats(a.completionDates);
+    const bDateStats = getDateStats(b.completionDates);
+    const aItemStats = getStats(a.itemsByMarch31);
+    const bItemStats = getStats(b.itemsByMarch31);
+
+    const fmt = (d) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+    let html = '<div class="results">';
+    html += '<h3 style="margin-bottom: 20px;">📊 Executive Summary</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">';
+
+    const cards = [
+        { label: 'P50 (A)', value: fmt(aDateStats.p50), color: '#90ee90' },
+        { label: 'P85 (A)', value: fmt(aDateStats.p85), color: '#90ee90' },
+        { label: 'P95 (A)', value: fmt(aDateStats.p95), color: '#90ee90' },
+        { label: 'Items by Mar (A, P85)', value: Math.round(aItemStats.p85) + ' / ' + a.baseBacklog, color: '#90ee90' },
+        { label: 'P50 (B)', value: fmt(bDateStats.p50), color: '#fff4e6' },
+        { label: 'P85 (B)', value: fmt(bDateStats.p85), color: '#fff4e6' },
+        { label: 'P95 (B)', value: fmt(bDateStats.p95), color: '#fff4e6' },
+        { label: 'Items by Mar (B, P85)', value: Math.round(bItemStats.p85) + ' / ' + b.baseBacklog, color: '#fff4e6' }
+    ];
+
+    cards.forEach(card => {
+        html += `<div style="background: ${card.color}; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;">${card.label}</div>
+            <div style="font-size: 1.5em; font-weight: bold; color: #333;">${card.value}</div>
+        </div>`;
+    });
+
+    html += '</div>';
+    html += '<h3>Scenario A: No Growth</h3>' + genScenarioTable(aDateStats, aItemStats, a);
+    html += '<h3 style="margin-top: 30px;">Scenario B: +20-30% Growth</h3>' + genScenarioTable(bDateStats, bItemStats, b);
+    html += '<h3 style="margin-top: 30px;">Completion Probability</h3>' + genProbTable(data, a, b);
+    html += '<div style="margin-top: 30px;"><h3>Scenario Comparison</h3><div style="position: relative; height: 300px;"><canvas id="comparisonChart"></canvas></div></div>';
+    html += '<div style="margin-top: 30px;"><h3>Distribution (Scenario A)</h3><div style="position: relative; height: 300px;"><canvas id="histogramChart"></canvas></div></div>';
+    html += '<div style="margin-top: 30px;"><h3>CDF - Cumulative Probability</h3><div style="position: relative; height: 300px;"><canvas id="cdfChart"></canvas></div></div>';
+    html += '</div>';
+    return html;
+}
+
+function genScenarioTable(dateStats, itemStats, scenario) {
+    return `<table style="width: 100%; margin: 15px 0; border-collapse: collapse;">
+        <tr style="background: #f5f5f5;">
+            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Metric</th>
+            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">P50</th>
+            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">P85</th>
+            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">P95</th>
+        </tr>
+        <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 500;">Completion</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${dateStats.p50.toLocaleDateString()}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${dateStats.p85.toLocaleDateString()}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${dateStats.p95.toLocaleDateString()}</td>
+        </tr>
+        <tr style="background: #fafafa;">
+            <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: 500;">Items by Mar 31</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Math.round(itemStats.p50)}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Math.round(itemStats.p85)}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Math.round(itemStats.p95)}</td>
+        </tr>
+    </table>`;
+}
+
+function genProbTable(data, a, b) {
+    const months = [
+        { name: 'Feb 28', date: data.feb28 },
+        { name: 'Mar 31', date: data.march31 },
+        { name: 'Apr 30', date: data.apr30 },
+        { name: 'May 31', date: data.may31 }
+    ];
+    let html = '<table style="width: 100%; border-collapse: collapse;"><tr style="background: #f5f5f5;"><th style="padding: 10px; text-align: left; border-bottom: 2px solid #ddd;">Date</th>';
+    html += '<th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">A (%)</th><th style="padding: 10px; text-align: center; border-bottom: 2px solid #ddd;">B (%)</th></tr>';
+    months.forEach((m, i) => {
+        const key = m.date.toISOString().split('T')[0];
+        const probA = ((a.dateProbs[key] || 0) / a.numSims * 100).toFixed(1);
+        const probB = ((b.dateProbs[key] || 0) / b.numSims * 100).toFixed(1);
+        html += `<tr style="background: ${i % 2 ? '#fafafa' : 'white'};"><td style="padding: 10px; border-bottom: 1px solid #eee;">${m.name}</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee; font-weight: bold;">${probA}</td>
+                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee; font-weight: bold;">${probB}</td></tr>`;
+    });
+    html += '</table>';
+    return html;
+}
+
+function renderComparisonChart(data) {
+    const ctx = document.getElementById('comparisonChart');
+    if (!ctx) return;
+    const getStats = (dates) => {
+        const days = dates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24));
+        const sorted = days.slice().sort((a, b) => a - b);
+        return { p50: sorted[Math.floor(sorted.length * 0.50)], p85: sorted[Math.floor(sorted.length * 0.85)], p95: sorted[Math.floor(sorted.length * 0.95)] };
+    };
+    const aStats = getStats(data.scenarioA.completionDates);
+    const bStats = getStats(data.scenarioB.completionDates);
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['P50', 'P85', 'P95'],
+            datasets: [
+                { label: 'Scenario A', data: [aStats.p50, aStats.p85, aStats.p95], backgroundColor: '#90ee90', borderColor: '#4caf50', borderWidth: 2 },
+                { label: 'Scenario B', data: [bStats.p50, bStats.p85, bStats.p95], backgroundColor: '#ffd699', borderColor: '#ff9800', borderWidth: 2 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+    });
+}
+
+function renderCompletionHistogram(data) {
+    const ctx = document.getElementById('histogramChart');
+    if (!ctx) return;
+    const days = data.scenarioA.completionDates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24));
+    const bins = {}, maxBin = Math.ceil(Math.max(...days) / 7);
+    days.forEach(d => { const bin = Math.floor(d / 7) * 7; bins[bin] = (bins[bin] || 0) + 1; });
+    const sortedBins = Object.keys(bins).sort((a, b) => a - b).slice(0, 20);
+    const labels = sortedBins.map(b => 'Day ' + b);
+    new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Simulations', data: sortedBins.map(b => bins[b]), backgroundColor: '#90ee90', borderColor: '#4caf50', borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+}
+
+function renderCDFChart(data) {
+    const ctx = document.getElementById('cdfChart');
+    if (!ctx) return;
+    const days = data.scenarioA.completionDates.map(d => (d - data.startDate) / (1000 * 60 * 60 * 24)).sort((a, b) => a - b);
+    const labels = [], cdfData = [];
+    for (let i = 0; i < days.length; i += Math.max(1, Math.floor(days.length / 50))) {
+        labels.push('Day ' + Math.round(days[i]));
+        cdfData.push((i / days.length) * 100);
+    }
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{ label: 'Probability (%)', data: cdfData, borderColor: '#4caf50', backgroundColor: 'rgba(144, 238, 144, 0.2)', borderWidth: 2, fill: true, tension: 0.4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } }
+    });
+}
+
+function exportAdvancedResults() { alert('CSV export coming soon!'); }
+
+function resetAdvancedDefaults() {
+    document.getElementById('advBacklog').value = '62';
+    document.getElementById('advVelocity').value = '5, 4, 4, 5, 6, 4, 2, 3, 2, 5, 6';
+    document.getElementById('advSimulations').value = '100000';
+    document.getElementById('advSprintLength').value = '14';
+    document.getElementById('advancedResults').innerHTML = '';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
